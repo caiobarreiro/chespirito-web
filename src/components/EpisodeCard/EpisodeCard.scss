@@ -1,0 +1,50 @@
+@use "../../styles/variables" as *;
+
+.episode-card {
+  border: 1px solid $border;
+  border-radius: $radius;
+  background: $card;
+  box-shadow: $shadow;
+  padding: 12px;
+}
+
+.episode-card__header {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.episode-card__titles {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.episode-card__title {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.episode-card__subtitle {
+  color: $muted;
+}
+
+.episode-card__badges {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.episode-card__meta {
+  margin-top: 10px;
+  color: $muted;
+  font-size: 14px;
+}
+
+.episode-card__synopsis {
+  margin-top: 10px;
+  white-space: pre-wrap;
+}

@@ -1,0 +1,46 @@
+@use "./styles/variables" as *;
+
+.app {
+  padding: 24px;
+  max-width: 980px;
+  margin: 0 auto;
+  display: grid;
+  gap: $gap;
+}
+
+.app__header {
+  display: grid;
+  gap: 6px;
+}
+
+.app__title {
+  margin: 0;
+}
+
+.app__hint {
+  color: $muted;
+}
+
+.app__endpoint {
+  color: $muted;
+}
+
+.app__error {
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 10px 12px;
+  border-radius: $radius;
+}
+
+.app__results {
+  display: grid;
+  gap: $gap;
+}
+
+.app__empty {
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 12px;
+  color: $muted;
+}
