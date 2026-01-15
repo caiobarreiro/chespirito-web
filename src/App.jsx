@@ -102,12 +102,15 @@ export default function App() {
               {e.show && (
                 <span
                   style={{
-                    fontSize: 13,
-                    padding: "4px 10px",
-                    borderRadius: 999,
-                    background: "#eef",
-                    color: "#334",
-                    border: "1px solid #ccd",
+                    fontSize: 12,
+                    padding: "4px 8px",
+                    borderRadius: 6,
+                    background: "#111827", // quase preto
+                    color: "#fff",
+                    fontWeight: 600,
+                    letterSpacing: "0.3px",
+                    textTransform: "uppercase",
+                    border: "1px solid #111827",
                   }}
                   title={e.show.nameEs}
                 >
