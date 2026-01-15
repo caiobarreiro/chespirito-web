@@ -123,6 +123,7 @@ export default function App() {
                       border: "1px solid #ddd",
                       background: "#f7f7f7",
                       fontSize: 13,
+                      color: "#242424",
                     }}
                     title={c.name}
                   >
