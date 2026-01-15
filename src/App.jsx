@@ -99,6 +99,22 @@ export default function App() {
                 flexWrap: "wrap",
               }}
             >
+              {e.show && (
+                <span
+                  style={{
+                    fontSize: 13,
+                    padding: "4px 10px",
+                    borderRadius: 999,
+                    background: "#eef",
+                    color: "#334",
+                    border: "1px solid #ccd",
+                  }}
+                  title={e.show.nameEs}
+                >
+                  {e.show.name}
+                </span>
+              )}
+
               <strong style={{ fontSize: 18 }}>{e.title}</strong>
               <span style={{ color: "#666" }}>({e.titleEs})</span>
             </div>
