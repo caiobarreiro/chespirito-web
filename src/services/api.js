@@ -9,7 +9,9 @@ function requireApiBase() {
 
 export async function fetchEpisodes({ q }) {
   const base = requireApiBase();
-  const url = new URL("/episodes", base);
+
+  // NÃO comece com "/" aqui
+  const url = new URL("episodes", base);
 
   const qq = (q ?? "").trim();
   if (qq) url.searchParams.set("q", qq);
@@ -19,3 +21,4 @@ export async function fetchEpisodes({ q }) {
   const data = await res.json();
   return Array.isArray(data) ? data : [];
 }
+
