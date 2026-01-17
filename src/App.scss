@@ -22,7 +22,45 @@
   color: $muted;
 }
 
+.app__nav {
+  display: flex;
+  gap: 12px;
+}
+
+.app__nav-link {
+  color: white;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.app__nav-link:hover {
+  text-decoration: underline;
+}
+
+.app__nav-link[aria-current="page"] {
+  text-decoration: underline;
+}
+
 .app__endpoint {
+  color: $muted;
+}
+
+.page {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid $border;
+  border-radius: $radius;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.page__title {
+  margin: 0;
+  color: white;
+}
+
+.page__hint {
+  margin: 0;
   color: $muted;
 }
 
