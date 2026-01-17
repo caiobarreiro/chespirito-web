@@ -1,0 +1,39 @@
+@use "../../styles/variables" as *;
+
+.actor-card {
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  display: grid;
+  gap: 10px;
+}
+
+.actor-card__title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+}
+
+.actor-card__section {
+  display: grid;
+  gap: 6px;
+}
+
+.actor-card__label {
+  color: $muted;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.actor-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.actor-card__meta {
+  color: $muted;
+  font-size: 0.9rem;
+}
