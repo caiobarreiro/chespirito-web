@@ -36,3 +36,31 @@ export async function fetchActors({ q }) {
   const data = await res.json();
   return Array.isArray(data) ? data : [];
 }
+
+export async function fetchCharacters({ q }) {
+  const base = requireApiBase();
+
+  // NÃO comece com "/" aqui
+  const url = new URL("characters", base);
+
+  const qq = (q ?? "").trim();
+  if (qq) url.searchParams.set("q", qq);
+
+  const res = await fetch(url.toString());
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+}
+
+export async function fetchEpisodesByCharacter({ characterId }) {
+  const base = requireApiBase();
+
+  // NÃO comece com "/" aqui
+  const url = new URL("episodes", base);
+  if (characterId) url.searchParams.set("characters", characterId);
+
+  const res = await fetch(url.toString());
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+}

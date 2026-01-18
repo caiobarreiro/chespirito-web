@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import SearchBar from "./components/SearchBar/SearchBar.jsx";
 import EpisodeCard from "./components/EpisodeCard/EpisodeCard.jsx";
 import ActorCard from "./components/ActorCard/ActorCard.jsx";
-import { fetchActors, fetchEpisodes } from "./services/api.js";
+import CharacterCard from "./components/CharacterCard/CharacterCard.jsx";
+import CharacterModal from "./components/CharacterModal/CharacterModal.jsx";
+import { fetchActors, fetchCharacters, fetchEpisodes, fetchEpisodesByCharacter } from "./services/api.js";
 import "./App.scss";
 
 export default function App() {
@@ -14,6 +16,14 @@ export default function App() {
   const [actorsLoading, setActorsLoading] = useState(false);
   const [actorsErr, setActorsErr] = useState("");
   const [actorsItems, setActorsItems] = useState([]);
+  const [charactersQuery, setCharactersQuery] = useState("");
+  const [charactersLoading, setCharactersLoading] = useState(false);
+  const [charactersErr, setCharactersErr] = useState("");
+  const [charactersItems, setCharactersItems] = useState([]);
+  const [selectedCharacter, setSelectedCharacter] = useState(null);
+  const [characterEpisodes, setCharacterEpisodes] = useState([]);
+  const [characterEpisodesLoading, setCharacterEpisodesLoading] = useState(false);
+  const [characterEpisodesErr, setCharacterEpisodesErr] = useState("");
   const [path, setPath] = useState(window.location.pathname);
 
   useEffect(() => {
@@ -29,18 +39,20 @@ export default function App() {
     if (to === window.location.pathname) return;
     window.history.pushState({}, "", to);
     setPath(to);
+    setSelectedCharacter(null);
   }
 
   const isActorsPage = path === "/actors";
+  const isCharactersPage = path === "/characters";
 
   const endpointPreview = useMemo(() => {
     const base = import.meta.env.VITE_API_BASE_URL || "(missing VITE_API_BASE_URL)";
-    const route = isActorsPage ? "/actors" : "/episodes";
+    const route = isActorsPage ? "/actors" : isCharactersPage ? "/characters" : "/episodes";
     const u = new URL(route, base.startsWith("http") ? base : "https://example.com");
-    const qq = (isActorsPage ? actorsQuery : episodesQuery).trim();
+    const qq = (isActorsPage ? actorsQuery : isCharactersPage ? charactersQuery : episodesQuery).trim();
     if (qq) u.searchParams.set("q", qq);
     return base.startsWith("http") ? u.toString() : base;
-  }, [actorsQuery, episodesQuery, isActorsPage]);
+  }, [actorsQuery, charactersQuery, episodesQuery, isActorsPage, isCharactersPage]);
 
   function getStateFor(route) {
     if (route === "actors") {
@@ -52,6 +64,15 @@ export default function App() {
       };
     }
 
+    if (route === "characters") {
+      return {
+        query: charactersQuery,
+        setItems: setCharactersItems,
+        setLoading: setCharactersLoading,
+        setErr: setCharactersErr,
+      };
+    }
+
     return {
       query: episodesQuery,
       setItems: setEpisodesItems,
@@ -60,14 +81,21 @@ export default function App() {
     };
   }
 
-  async function runSearch(e, route = isActorsPage ? "actors" : "episodes") {
+  async function runSearch(
+    e,
+    route = isActorsPage ? "actors" : isCharactersPage ? "characters" : "episodes",
+  ) {
     e?.preventDefault();
     const { query, setItems, setLoading, setErr } = getStateFor(route);
     setLoading(true);
     setErr("");
     try {
       const data =
-        route === "actors" ? await fetchActors({ q: query }) : await fetchEpisodes({ q: query });
+        route === "actors"
+          ? await fetchActors({ q: query })
+          : route === "characters"
+          ? await fetchCharacters({ q: query })
+          : await fetchEpisodes({ q: query });
       setItems(data);
     } catch (ex) {
       setErr(ex.message || String(ex));
@@ -78,11 +106,51 @@ export default function App() {
   }
 
   useEffect(() => {
-    if (isActorsPage) {
-      runSearch(null, "actors");
-    }
+    if (isActorsPage) runSearch(null, "actors");
+    if (isCharactersPage) runSearch(null, "characters");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isActorsPage]);
+  }, [isActorsPage, isCharactersPage]);
+
+  useEffect(() => {
+    if (!selectedCharacter) return;
+    if (!selectedCharacter.id) {
+      setCharacterEpisodes([]);
+      setCharacterEpisodesErr("Personagem sem identificador.");
+      return;
+    }
+
+    let isActive = true;
+    setCharacterEpisodes([]);
+    setCharacterEpisodesErr("");
+    setCharacterEpisodesLoading(true);
+
+    fetchEpisodesByCharacter({ characterId: selectedCharacter.id })
+      .then((data) => {
+        if (!isActive) return;
+        setCharacterEpisodes(data);
+      })
+      .catch((ex) => {
+        if (!isActive) return;
+        setCharacterEpisodesErr(ex.message || String(ex));
+      })
+      .finally(() => {
+        if (!isActive) return;
+        setCharacterEpisodesLoading(false);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [selectedCharacter]);
+
+  useEffect(() => {
+    if (!selectedCharacter) return;
+    function handleKeyDown(event) {
+      if (event.key === "Escape") setSelectedCharacter(null);
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedCharacter]);
 
   return (
     <div className="app">
@@ -112,17 +180,30 @@ export default function App() {
           >
             Atores
           </a>
+          <a
+            className="app__nav-link"
+            href="/characters"
+            aria-current={isCharactersPage ? "page" : undefined}
+            onClick={(event) => {
+              event.preventDefault();
+              navigate("/characters");
+            }}
+          >
+            Personagens
+          </a>
         </nav>
       </header>
 
       <SearchBar
-        value={isActorsPage ? actorsQuery : episodesQuery}
-        onChange={isActorsPage ? setActorsQuery : setEpisodesQuery}
+        value={isActorsPage ? actorsQuery : isCharactersPage ? charactersQuery : episodesQuery}
+        onChange={isActorsPage ? setActorsQuery : isCharactersPage ? setCharactersQuery : setEpisodesQuery}
         onSubmit={runSearch}
-        loading={isActorsPage ? actorsLoading : episodesLoading}
+        loading={isActorsPage ? actorsLoading : isCharactersPage ? charactersLoading : episodesLoading}
         placeholder={
           isActorsPage
             ? "Digite: churros, barril, elenco… (vazio = lista tudo)"
+            : isCharactersPage
+            ? "Digite: chaves, nhonho, barriga… (vazio = lista tudo)"
             : "Digite: florinda, renta, aluguel, torta de jamón… (vazio = lista tudo)"
         }
       />
@@ -131,8 +212,10 @@ export default function App() {
         Endpoint: <code>{endpointPreview}</code>
       </div>
 
-      {(isActorsPage ? actorsErr : episodesErr) && (
-        <div className="app__error">Erro: {isActorsPage ? actorsErr : episodesErr}</div>
+      {(isActorsPage ? actorsErr : isCharactersPage ? charactersErr : episodesErr) && (
+        <div className="app__error">
+          Erro: {isActorsPage ? actorsErr : isCharactersPage ? charactersErr : episodesErr}
+        </div>
       )}
 
       {isActorsPage ? (
@@ -143,6 +226,20 @@ export default function App() {
 
           {actorsItems.map((actor, index) => (
             <ActorCard key={actor.id ?? actor.name ?? index} actor={actor} />
+          ))}
+        </main>
+      ) : isCharactersPage ? (
+        <main className="app__results">
+          {!charactersLoading && !charactersErr && charactersItems.length === 0 && (
+            <div className="app__empty">Nenhum personagem encontrado.</div>
+          )}
+
+          {charactersItems.map((character, index) => (
+            <CharacterCard
+              key={character.id ?? character.name ?? index}
+              character={character}
+              onSelect={(value) => setSelectedCharacter(value)}
+            />
           ))}
         </main>
       ) : (
@@ -156,6 +253,14 @@ export default function App() {
           ))}
         </main>
       )}
+
+      <CharacterModal
+        character={selectedCharacter}
+        episodes={characterEpisodes}
+        loading={characterEpisodesLoading}
+        error={characterEpisodesErr}
+        onClose={() => setSelectedCharacter(null)}
+      />
     </div>
   );
 }
