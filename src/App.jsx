@@ -6,10 +6,14 @@ import { fetchActors, fetchEpisodes } from "./services/api.js";
 import "./App.scss";
 
 export default function App() {
-  const [q, setQ] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState("");
-  const [items, setItems] = useState([]);
+  const [episodesQuery, setEpisodesQuery] = useState("");
+  const [episodesLoading, setEpisodesLoading] = useState(false);
+  const [episodesErr, setEpisodesErr] = useState("");
+  const [episodesItems, setEpisodesItems] = useState([]);
+  const [actorsQuery, setActorsQuery] = useState("");
+  const [actorsLoading, setActorsLoading] = useState(false);
+  const [actorsErr, setActorsErr] = useState("");
+  const [actorsItems, setActorsItems] = useState([]);
   const [path, setPath] = useState(window.location.pathname);
 
   useEffect(() => {
@@ -25,9 +29,6 @@ export default function App() {
     if (to === window.location.pathname) return;
     window.history.pushState({}, "", to);
     setPath(to);
-    if (to === "/actors") {
-      setQ("");
-    }
   }
 
   const isActorsPage = path === "/actors";
@@ -36,17 +37,37 @@ export default function App() {
     const base = import.meta.env.VITE_API_BASE_URL || "(missing VITE_API_BASE_URL)";
     const route = isActorsPage ? "/actors" : "/episodes";
     const u = new URL(route, base.startsWith("http") ? base : "https://example.com");
-    const qq = q.trim();
+    const qq = (isActorsPage ? actorsQuery : episodesQuery).trim();
     if (qq) u.searchParams.set("q", qq);
     return base.startsWith("http") ? u.toString() : base;
-  }, [isActorsPage, q]);
+  }, [actorsQuery, episodesQuery, isActorsPage]);
 
-  async function runSearch(e) {
+  function getStateFor(route) {
+    if (route === "actors") {
+      return {
+        query: actorsQuery,
+        setItems: setActorsItems,
+        setLoading: setActorsLoading,
+        setErr: setActorsErr,
+      };
+    }
+
+    return {
+      query: episodesQuery,
+      setItems: setEpisodesItems,
+      setLoading: setEpisodesLoading,
+      setErr: setEpisodesErr,
+    };
+  }
+
+  async function runSearch(e, route = isActorsPage ? "actors" : "episodes") {
     e?.preventDefault();
+    const { query, setItems, setLoading, setErr } = getStateFor(route);
     setLoading(true);
     setErr("");
     try {
-      const data = isActorsPage ? await fetchActors({ q }) : await fetchEpisodes({ q });
+      const data =
+        route === "actors" ? await fetchActors({ q: query }) : await fetchEpisodes({ q: query });
       setItems(data);
     } catch (ex) {
       setErr(ex.message || String(ex));
@@ -58,7 +79,7 @@ export default function App() {
 
   useEffect(() => {
     if (isActorsPage) {
-      runSearch();
+      runSearch(null, "actors");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActorsPage]);
@@ -95,10 +116,10 @@ export default function App() {
       </header>
 
       <SearchBar
-        value={q}
-        onChange={setQ}
+        value={isActorsPage ? actorsQuery : episodesQuery}
+        onChange={isActorsPage ? setActorsQuery : setEpisodesQuery}
         onSubmit={runSearch}
-        loading={loading}
+        loading={isActorsPage ? actorsLoading : episodesLoading}
         placeholder={
           isActorsPage
             ? "Digite: churros, barril, elenco… (vazio = lista tudo)"
@@ -110,25 +131,27 @@ export default function App() {
         Endpoint: <code>{endpointPreview}</code>
       </div>
 
-      {err && <div className="app__error">Erro: {err}</div>}
+      {(isActorsPage ? actorsErr : episodesErr) && (
+        <div className="app__error">Erro: {isActorsPage ? actorsErr : episodesErr}</div>
+      )}
 
       {isActorsPage ? (
         <main className="app__results">
-          {!loading && !err && items.length === 0 && (
+          {!actorsLoading && !actorsErr && actorsItems.length === 0 && (
             <div className="app__empty">Nenhum ator encontrado.</div>
           )}
 
-          {items.map((actor, index) => (
+          {actorsItems.map((actor, index) => (
             <ActorCard key={actor.id ?? actor.name ?? index} actor={actor} />
           ))}
         </main>
       ) : (
         <main className="app__results">
-          {!loading && !err && items.length === 0 && (
+          {!episodesLoading && !episodesErr && episodesItems.length === 0 && (
             <div className="app__empty">Nenhum resultado.</div>
           )}
 
-          {items.map((ep) => (
+          {episodesItems.map((ep) => (
             <EpisodeCard key={ep.id} episode={ep} />
           ))}
         </main>
