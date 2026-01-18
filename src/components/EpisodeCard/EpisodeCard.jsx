@@ -4,6 +4,15 @@ import "./EpisodeCard.scss";
 
 export default function EpisodeCard({ episode }) {
   const chars = Array.isArray(episode.characters) ? episode.characters : [];
+  const parsedAirDate = episode.airDate ? new Date(episode.airDate) : null;
+  const formattedAirDate =
+    parsedAirDate && !Number.isNaN(parsedAirDate.getTime())
+      ? new Intl.DateTimeFormat("pt-BR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        }).format(parsedAirDate)
+      : "—";
 
   return (
     <div className="episode-card">
@@ -26,7 +35,7 @@ export default function EpisodeCard({ episode }) {
       )}
 
       <div className="episode-card__meta">
-        Temporada {episode.season} • Ep {episode.episodeNumber} • {episode.airDate ?? "—"}
+        Temporada {episode.season} • Ep {episode.episodeNumber} • {formattedAirDate}
       </div>
 
       <div className="episode-card__synopsis">{episode.synopsisPt}</div>
