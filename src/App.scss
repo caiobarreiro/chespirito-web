@@ -73,6 +73,25 @@
   gap: $gap;
 }
 
+.app__actors-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app__button {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: white;
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.app__button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
 .app__empty {
   border: 1px solid $border;
   border-radius: $radius;

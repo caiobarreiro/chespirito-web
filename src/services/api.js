@@ -77,3 +77,26 @@ export async function fetchEpisodesByShow({ showId }) {
   const data = await res.json();
   return Array.isArray(data) ? data : [];
 }
+
+export async function createActor({ name, fullName, dob, dod }) {
+  const base = requireApiBase();
+
+  // NÃO comece com "/" aqui
+  const url = new URL("actor", base);
+
+  const res = await fetch(url.toString(), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name,
+      fullName,
+      dob,
+      dod,
+    }),
+  });
+
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}

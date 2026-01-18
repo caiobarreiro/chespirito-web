@@ -1,0 +1,118 @@
+@use "../../styles/variables" as *;
+
+.actor-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 10, 14, 0.72);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  z-index: 30;
+}
+
+.actor-modal__panel {
+  width: min(560px, 100%);
+  background: #0f172a;
+  border-radius: $radius;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+}
+
+.actor-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.actor-modal__title {
+  margin: 0;
+  color: white;
+  font-size: 1.25rem;
+}
+
+.actor-modal__close {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: white;
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.actor-modal__close:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.actor-modal__form {
+  display: grid;
+  gap: 12px;
+}
+
+.actor-modal__field {
+  display: grid;
+  gap: 6px;
+  color: white;
+  font-size: 0.95rem;
+}
+
+.actor-modal__label {
+  font-weight: 600;
+}
+
+.actor-modal__input {
+  border-radius: $radius;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(15, 23, 42, 0.8);
+  color: white;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+}
+
+.actor-modal__input:focus {
+  outline: 2px solid rgba(147, 197, 253, 0.7);
+  outline-offset: 1px;
+}
+
+.actor-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.actor-modal__button {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: white;
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.actor-modal__button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.actor-modal__button--primary {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.actor-modal__button--primary:hover {
+  background: #1d4ed8;
+}
+
+.actor-modal__button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.actor-modal__error {
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 10px 12px;
+  border-radius: $radius;
+}
