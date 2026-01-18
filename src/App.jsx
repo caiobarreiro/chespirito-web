@@ -1,10 +1,17 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import SearchBar from "./components/SearchBar/SearchBar.jsx";
 import EpisodeCard from "./components/EpisodeCard/EpisodeCard.jsx";
 import ActorCard from "./components/ActorCard/ActorCard.jsx";
 import CharacterCard from "./components/CharacterCard/CharacterCard.jsx";
 import CharacterModal from "./components/CharacterModal/CharacterModal.jsx";
-import { fetchActors, fetchCharacters, fetchEpisodes, fetchEpisodesByCharacter } from "./services/api.js";
+import ShowModal from "./components/ShowModal/ShowModal.jsx";
+import {
+  fetchActors,
+  fetchCharacters,
+  fetchEpisodes,
+  fetchEpisodesByCharacter,
+  fetchEpisodesByShow,
+} from "./services/api.js";
 import "./App.scss";
 
 export default function App() {
@@ -24,6 +31,10 @@ export default function App() {
   const [characterEpisodes, setCharacterEpisodes] = useState([]);
   const [characterEpisodesLoading, setCharacterEpisodesLoading] = useState(false);
   const [characterEpisodesErr, setCharacterEpisodesErr] = useState("");
+  const [selectedShow, setSelectedShow] = useState(null);
+  const [showEpisodes, setShowEpisodes] = useState([]);
+  const [showEpisodesLoading, setShowEpisodesLoading] = useState(false);
+  const [showEpisodesErr, setShowEpisodesErr] = useState("");
   const [path, setPath] = useState(window.location.pathname);
 
   useEffect(() => {
@@ -40,19 +51,11 @@ export default function App() {
     window.history.pushState({}, "", to);
     setPath(to);
     setSelectedCharacter(null);
+    setSelectedShow(null);
   }
 
   const isActorsPage = path === "/actors";
   const isCharactersPage = path === "/characters";
-
-  const endpointPreview = useMemo(() => {
-    const base = import.meta.env.VITE_API_BASE_URL || "(missing VITE_API_BASE_URL)";
-    const route = isActorsPage ? "/actors" : isCharactersPage ? "/characters" : "/episodes";
-    const u = new URL(route, base.startsWith("http") ? base : "https://example.com");
-    const qq = (isActorsPage ? actorsQuery : isCharactersPage ? charactersQuery : episodesQuery).trim();
-    if (qq) u.searchParams.set("q", qq);
-    return base.startsWith("http") ? u.toString() : base;
-  }, [actorsQuery, charactersQuery, episodesQuery, isActorsPage, isCharactersPage]);
 
   function getStateFor(route) {
     if (route === "actors") {
@@ -152,6 +155,38 @@ export default function App() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedCharacter]);
 
+  useEffect(() => {
+    if (!selectedShow) return;
+    if (!selectedShow.id) {
+      setShowEpisodes([]);
+      setShowEpisodesErr("Show sem identificador.");
+      return;
+    }
+
+    let isActive = true;
+    setShowEpisodes([]);
+    setShowEpisodesErr("");
+    setShowEpisodesLoading(true);
+
+    fetchEpisodesByShow({ showId: selectedShow.id })
+      .then((data) => {
+        if (!isActive) return;
+        setShowEpisodes(data);
+      })
+      .catch((ex) => {
+        if (!isActive) return;
+        setShowEpisodesErr(ex.message || String(ex));
+      })
+      .finally(() => {
+        if (!isActive) return;
+        setShowEpisodesLoading(false);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [selectedShow]);
+
   return (
     <div className="app">
       <header className="app__header">
@@ -208,10 +243,6 @@ export default function App() {
         }
       />
 
-      <div className="app__endpoint">
-        Endpoint: <code>{endpointPreview}</code>
-      </div>
-
       {(isActorsPage ? actorsErr : isCharactersPage ? charactersErr : episodesErr) && (
         <div className="app__error">
           Erro: {isActorsPage ? actorsErr : isCharactersPage ? charactersErr : episodesErr}
@@ -253,7 +284,12 @@ export default function App() {
           )}
 
           {episodesItems.map((ep) => (
-            <EpisodeCard key={ep.id} episode={ep} onSelect={(value) => setSelectedCharacter(value)} />
+            <EpisodeCard
+              key={ep.id}
+              episode={ep}
+              onSelect={(value) => setSelectedCharacter(value)}
+              onShowSelect={(value) => setSelectedShow(value)}
+            />
           ))}
         </main>
       )}
@@ -264,6 +300,15 @@ export default function App() {
         loading={characterEpisodesLoading}
         error={characterEpisodesErr}
         onClose={() => setSelectedCharacter(null)}
+        onShowSelect={(value) => setSelectedShow(value)}
+      />
+
+      <ShowModal
+        show={selectedShow}
+        episodes={showEpisodes}
+        loading={showEpisodesLoading}
+        error={showEpisodesErr}
+        onClose={() => setSelectedShow(null)}
       />
     </div>
   );

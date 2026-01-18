@@ -1,11 +1,28 @@
 import "./ShowLabel.scss";
 
-export default function ShowLabel({ show }) {
+export default function ShowLabel({ show, onSelect }) {
   if (!show) return null;
 
+  const label = typeof show === "string" ? show : show.name;
+  const title = typeof show === "string" ? show : show.nameEs;
+  const isButton = typeof onSelect === "function";
+
+  if (!isButton) {
+    return (
+      <span className="show-label" title={title}>
+        {label}
+      </span>
+    );
+  }
+
   return (
-    <span className="show-label" title={show.nameEs}>
-      {show.name}
-    </span>
+    <button
+      className="show-label show-label--button"
+      type="button"
+      title={title}
+      onClick={() => onSelect(show)}
+    >
+      {label}
+    </button>
   );
 }

@@ -9,4 +9,15 @@
   font-weight: 700;
   letter-spacing: 0.3px;
   text-transform: uppercase;
+  border: none;
+}
+
+.show-label--button {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.show-label--button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.25);
 }

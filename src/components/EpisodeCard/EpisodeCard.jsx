@@ -2,7 +2,7 @@ import Badge from "../Badge/Badge.jsx";
 import ShowLabel from "../ShowLabel/ShowLabel.jsx";
 import "./EpisodeCard.scss";
 
-export default function EpisodeCard({ episode, onSelect }) {
+export default function EpisodeCard({ episode, onSelect, onShowSelect }) {
   const chars = Array.isArray(episode.characters) ? episode.characters : [];
   const parsedAirDate = episode.airDate ? new Date(episode.airDate) : null;
   const formattedAirDate =
@@ -17,7 +17,7 @@ export default function EpisodeCard({ episode, onSelect }) {
   return (
     <div className="episode-card">
       <div className="episode-card__header">
-        <ShowLabel show={episode.show} />
+        <ShowLabel show={episode.show} onSelect={onShowSelect} />
         <div className="episode-card__titles">
           <div className="episode-card__title">{episode.title}</div>
           <div className="episode-card__subtitle">({episode.titleEs})</div>
