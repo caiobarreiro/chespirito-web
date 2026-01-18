@@ -5,7 +5,7 @@ function getActorName(actor) {
   return actor?.name ?? actor?.actor ?? actor?.fullName ?? "Nome não informado";
 }
 
-export default function ActorCard({ actor }) {
+export default function ActorCard({ actor, onSelect }) {
   const roles = Array.isArray(actor?.characters)
     ? actor.characters
     : Array.isArray(actor?.roles)
@@ -26,7 +26,11 @@ export default function ActorCard({ actor }) {
               const name = typeof role === "string" ? role : role?.name;
               if (!name) return null;
               return (
-                <Badge key={name} title={name}>
+                <Badge
+                  key={name}
+                  title={name}
+                  onClick={onSelect ? () => onSelect(typeof role === "string" ? { name } : role) : undefined}
+                >
                   {name}
                 </Badge>
               );
