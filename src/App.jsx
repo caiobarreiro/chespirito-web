@@ -5,12 +5,14 @@ import ActorCard from "./components/ActorCard/ActorCard.jsx";
 import CharacterCard from "./components/CharacterCard/CharacterCard.jsx";
 import CharacterModal from "./components/CharacterModal/CharacterModal.jsx";
 import ShowModal from "./components/ShowModal/ShowModal.jsx";
+import ActorModal from "./components/ActorModal/ActorModal.jsx";
 import {
   fetchActors,
   fetchCharacters,
   fetchEpisodes,
   fetchEpisodesByCharacter,
   fetchEpisodesByShow,
+  createActor,
 } from "./services/api.js";
 import "./App.scss";
 
@@ -36,6 +38,8 @@ export default function App() {
   const [showEpisodesLoading, setShowEpisodesLoading] = useState(false);
   const [showEpisodesErr, setShowEpisodesErr] = useState("");
   const [path, setPath] = useState(window.location.pathname);
+  const [isActorModalOpen, setIsActorModalOpen] = useState(false);
+  const [actorCreateErr, setActorCreateErr] = useState("");
 
   useEffect(() => {
     function handlePopState() {
@@ -113,6 +117,19 @@ export default function App() {
     if (isCharactersPage) runSearch(null, "characters");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActorsPage, isCharactersPage]);
+
+  async function handleCreateActor(payload) {
+    setActorCreateErr("");
+    try {
+      await createActor(payload);
+      if (isActorsPage) {
+        runSearch(null, "actors");
+      }
+    } catch (ex) {
+      setActorCreateErr(ex.message || String(ex));
+      throw ex;
+    }
+  }
 
   useEffect(() => {
     if (!selectedCharacter) return;
@@ -243,6 +260,15 @@ export default function App() {
         }
       />
 
+      {isActorsPage && (
+        <div className="app__actors-toolbar">
+          <button className="app__button" type="button" onClick={() => setIsActorModalOpen(true)}>
+            Adicionar Ator
+          </button>
+          {actorCreateErr && <div className="app__error">Erro: {actorCreateErr}</div>}
+        </div>
+      )}
+
       {(isActorsPage ? actorsErr : isCharactersPage ? charactersErr : episodesErr) && (
         <div className="app__error">
           Erro: {isActorsPage ? actorsErr : isCharactersPage ? charactersErr : episodesErr}
@@ -309,6 +335,12 @@ export default function App() {
         loading={showEpisodesLoading}
         error={showEpisodesErr}
         onClose={() => setSelectedShow(null)}
+      />
+
+      <ActorModal
+        isOpen={isActorModalOpen}
+        onClose={() => setIsActorModalOpen(false)}
+        onSubmit={handleCreateActor}
       />
     </div>
   );
