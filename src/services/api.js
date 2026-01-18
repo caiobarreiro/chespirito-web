@@ -64,3 +64,16 @@ export async function fetchEpisodesByCharacter({ characterId }) {
   const data = await res.json();
   return Array.isArray(data) ? data : [];
 }
+
+export async function fetchEpisodesByShow({ showId }) {
+  const base = requireApiBase();
+
+  // NÃO comece com "/" aqui
+  const url = new URL("episodes", base);
+  if (showId) url.searchParams.set("showId", showId);
+
+  const res = await fetch(url.toString());
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+}

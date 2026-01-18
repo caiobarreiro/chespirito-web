@@ -1,0 +1,92 @@
+@use "../../styles/variables" as *;
+
+.show-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 10, 14, 0.72);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  z-index: 25;
+}
+
+.show-modal__panel {
+  width: min(720px, 100%);
+  max-height: 80vh;
+  overflow: auto;
+  background: #0f172a;
+  border-radius: $radius;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+}
+
+.show-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.show-modal__title {
+  margin: 0;
+  color: white;
+  font-size: 1.25rem;
+}
+
+.show-modal__close {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: white;
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.show-modal__close:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.show-modal__status {
+  color: $muted;
+}
+
+.show-modal__error {
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 10px 12px;
+  border-radius: $radius;
+}
+
+.show-modal__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.show-modal__item {
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.6);
+  display: grid;
+  gap: 8px;
+}
+
+.show-modal__item-title {
+  color: white;
+  font-weight: 600;
+}
+
+.show-modal__item-subtitle {
+  color: $muted;
+}
+
+.show-modal__item-synopsis {
+  color: $muted;
+  font-size: 0.95rem;
+}

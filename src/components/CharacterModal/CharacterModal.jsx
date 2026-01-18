@@ -14,7 +14,14 @@ function getNormalizedShowKey(show) {
   return getShowName(show).trim().toLowerCase();
 }
 
-export default function CharacterModal({ character, episodes, loading, error, onClose }) {
+export default function CharacterModal({
+  character,
+  episodes,
+  loading,
+  error,
+  onClose,
+  onShowSelect,
+}) {
   if (!character) return null;
 
   const showOptions = useMemo(() => {
@@ -60,7 +67,7 @@ export default function CharacterModal({ character, episodes, loading, error, on
     <div className="character-modal" role="dialog" aria-modal="true" onClick={onClose}>
       <div className="character-modal__panel" onClick={(event) => event.stopPropagation()}>
         <div className="character-modal__header">
-          <h2 className="character-modal__title">Episódios de {getCharacterName(character)}</h2>
+          <h2 className="character-modal__title">Episódios com {getCharacterName(character)}</h2>
           <button className="character-modal__close" type="button" onClick={onClose}>
             Fechar
           </button>
@@ -102,7 +109,7 @@ export default function CharacterModal({ character, episodes, loading, error, on
             {filteredEpisodes.map((episode) => (
               <li key={episode.id ?? episode.title} className="character-modal__item">
                 <div className="character-modal__item-header">
-                  <ShowLabel show={episode.show} />
+                  <ShowLabel show={episode.show} onSelect={onShowSelect} />
                   <div>
                     <div className="character-modal__item-title">{episode.title}</div>
                     {episode.titleEs && (
