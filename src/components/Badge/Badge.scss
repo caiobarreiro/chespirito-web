@@ -8,3 +8,10 @@
   background: $badge-bg;
   font-size: 13px;
 }
+
+.badge--button {
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  appearance: none;
+}

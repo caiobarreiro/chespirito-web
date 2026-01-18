@@ -225,7 +225,11 @@ export default function App() {
           )}
 
           {actorsItems.map((actor, index) => (
-            <ActorCard key={actor.id ?? actor.name ?? index} actor={actor} />
+            <ActorCard
+              key={actor.id ?? actor.name ?? index}
+              actor={actor}
+              onSelect={(value) => setSelectedCharacter(value)}
+            />
           ))}
         </main>
       ) : isCharactersPage ? (
@@ -249,7 +253,7 @@ export default function App() {
           )}
 
           {episodesItems.map((ep) => (
-            <EpisodeCard key={ep.id} episode={ep} />
+            <EpisodeCard key={ep.id} episode={ep} onSelect={(value) => setSelectedCharacter(value)} />
           ))}
         </main>
       )}
