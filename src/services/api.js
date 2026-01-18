@@ -82,7 +82,7 @@ export async function createActor({ name, fullName, dob, dod }) {
   const base = requireApiBase();
 
   // NÃO comece com "/" aqui
-  const url = new URL("actor", base);
+  const url = new URL("actors", base);
 
   const res = await fetch(url.toString(), {
     method: "POST",
