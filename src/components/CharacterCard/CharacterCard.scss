@@ -1,0 +1,29 @@
+@use "../../styles/variables" as *;
+
+.character-card {
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  display: grid;
+  gap: 8px;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+
+.character-card:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.character-card__title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+}
+
+.character-card__meta {
+  color: $muted;
+  font-size: 0.9rem;
+}
