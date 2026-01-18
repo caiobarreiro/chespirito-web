@@ -60,6 +60,33 @@
   border-radius: $radius;
 }
 
+.character-modal__shows {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.character-modal__show-button {
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: transparent;
+  color: white;
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.character-modal__show-button:hover {
+  background: rgba(148, 163, 184, 0.12);
+  border-color: rgba(148, 163, 184, 0.7);
+}
+
+.character-modal__show-button--active {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.6);
+}
+
 .character-modal__list {
   list-style: none;
   padding: 0;
