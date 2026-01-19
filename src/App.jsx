@@ -6,6 +6,7 @@ import CharacterCard from "./components/CharacterCard/CharacterCard.jsx";
 import CharacterModal from "./components/CharacterModal/CharacterModal.jsx";
 import ShowModal from "./components/ShowModal/ShowModal.jsx";
 import ActorModal from "./components/ActorModal/ActorModal.jsx";
+import AddCharacterModal from "./components/AddCharacterModal/AddCharacterModal.jsx";
 import {
   fetchActors,
   fetchCharacters,
@@ -13,6 +14,7 @@ import {
   fetchEpisodesByCharacter,
   fetchEpisodesByShow,
   createActor,
+  createCharacter,
 } from "./services/api.js";
 import "./App.scss";
 
@@ -40,6 +42,11 @@ export default function App() {
   const [path, setPath] = useState(window.location.pathname);
   const [isActorModalOpen, setIsActorModalOpen] = useState(false);
   const [actorCreateErr, setActorCreateErr] = useState("");
+  const [isCharacterModalOpen, setIsCharacterModalOpen] = useState(false);
+  const [characterCreateErr, setCharacterCreateErr] = useState("");
+  const [characterActors, setCharacterActors] = useState([]);
+  const [characterActorsLoading, setCharacterActorsLoading] = useState(false);
+  const [characterActorsErr, setCharacterActorsErr] = useState("");
 
   useEffect(() => {
     function handlePopState() {
@@ -130,6 +137,43 @@ export default function App() {
       throw ex;
     }
   }
+
+  async function handleCreateCharacter(payload) {
+    setCharacterCreateErr("");
+    try {
+      await createCharacter(payload);
+      if (isCharactersPage) {
+        runSearch(null, "characters");
+      }
+    } catch (ex) {
+      setCharacterCreateErr(ex.message || String(ex));
+      throw ex;
+    }
+  }
+
+  useEffect(() => {
+    if (!isCharacterModalOpen) return;
+    let isActive = true;
+    setCharacterActorsLoading(true);
+    setCharacterActorsErr("");
+    fetchActors({ q: "" })
+      .then((data) => {
+        if (!isActive) return;
+        setCharacterActors(data);
+      })
+      .catch((ex) => {
+        if (!isActive) return;
+        setCharacterActorsErr(ex.message || String(ex));
+      })
+      .finally(() => {
+        if (!isActive) return;
+        setCharacterActorsLoading(false);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [isCharacterModalOpen]);
 
   useEffect(() => {
     if (!selectedCharacter) return;
@@ -261,11 +305,20 @@ export default function App() {
       />
 
       {isActorsPage && (
-        <div className="app__actors-toolbar">
+        <div className="app__toolbar">
           <button className="app__button" type="button" onClick={() => setIsActorModalOpen(true)}>
             Adicionar Ator
           </button>
           {actorCreateErr && <div className="app__error">Erro: {actorCreateErr}</div>}
+        </div>
+      )}
+
+      {isCharactersPage && (
+        <div className="app__toolbar">
+          <button className="app__button" type="button" onClick={() => setIsCharacterModalOpen(true)}>
+            Adicionar Personagem
+          </button>
+          {characterCreateErr && <div className="app__error">Erro: {characterCreateErr}</div>}
         </div>
       )}
 
@@ -341,6 +394,15 @@ export default function App() {
         isOpen={isActorModalOpen}
         onClose={() => setIsActorModalOpen(false)}
         onSubmit={handleCreateActor}
+      />
+
+      <AddCharacterModal
+        isOpen={isCharacterModalOpen}
+        onClose={() => setIsCharacterModalOpen(false)}
+        onSubmit={handleCreateCharacter}
+        actors={characterActors}
+        actorsLoading={characterActorsLoading}
+        actorsError={characterActorsErr}
       />
     </div>
   );

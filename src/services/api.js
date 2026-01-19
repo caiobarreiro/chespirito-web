@@ -100,3 +100,25 @@ export async function createActor({ name, fullName, dob, dod }) {
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
+
+export async function createCharacter({ name, nameEs, actorId }) {
+  const base = requireApiBase();
+
+  // NÃO comece com "/" aqui
+  const url = new URL("characters", base);
+
+  const res = await fetch(url.toString(), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name,
+      nameEs,
+      actorId,
+    }),
+  });
+
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
