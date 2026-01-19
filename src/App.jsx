@@ -9,6 +9,7 @@ import ShowModal from "./components/ShowModal/ShowModal.jsx";
 import ActorModal from "./components/ActorModal/ActorModal.jsx";
 import AddCharacterModal from "./components/AddCharacterModal/AddCharacterModal.jsx";
 import AddShowModal from "./components/AddShowModal/AddShowModal.jsx";
+import AddEpisodeModal from "./components/AddEpisodeModal/AddEpisodeModal.jsx";
 import {
   fetchActors,
   fetchCharacters,
@@ -58,6 +59,13 @@ export default function App() {
   const [characterActorsLoading, setCharacterActorsLoading] = useState(false);
   const [characterActorsErr, setCharacterActorsErr] = useState("");
   const [selectedEpisodeShowKey, setSelectedEpisodeShowKey] = useState("all");
+  const [isEpisodeModalOpen, setIsEpisodeModalOpen] = useState(false);
+  const [episodeShows, setEpisodeShows] = useState([]);
+  const [episodeShowsLoading, setEpisodeShowsLoading] = useState(false);
+  const [episodeShowsErr, setEpisodeShowsErr] = useState("");
+  const [episodeCharacters, setEpisodeCharacters] = useState([]);
+  const [episodeCharactersLoading, setEpisodeCharactersLoading] = useState(false);
+  const [episodeCharactersErr, setEpisodeCharactersErr] = useState("");
 
   function getShowName(show) {
     return typeof show === "string" ? show : show?.name ?? show?.namePt ?? "";
@@ -219,6 +227,47 @@ export default function App() {
       isActive = false;
     };
   }, [isCharacterModalOpen]);
+
+  useEffect(() => {
+    if (!isEpisodeModalOpen) return;
+    let isActive = true;
+    setEpisodeShowsLoading(true);
+    setEpisodeShowsErr("");
+    setEpisodeCharactersLoading(true);
+    setEpisodeCharactersErr("");
+
+    fetchShows({ q: "" })
+      .then((data) => {
+        if (!isActive) return;
+        setEpisodeShows(data);
+      })
+      .catch((ex) => {
+        if (!isActive) return;
+        setEpisodeShowsErr(ex.message || String(ex));
+      })
+      .finally(() => {
+        if (!isActive) return;
+        setEpisodeShowsLoading(false);
+      });
+
+    fetchCharacters({ q: "" })
+      .then((data) => {
+        if (!isActive) return;
+        setEpisodeCharacters(data);
+      })
+      .catch((ex) => {
+        if (!isActive) return;
+        setEpisodeCharactersErr(ex.message || String(ex));
+      })
+      .finally(() => {
+        if (!isActive) return;
+        setEpisodeCharactersLoading(false);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [isEpisodeModalOpen]);
 
   useEffect(() => {
     if (!selectedCharacter) return;
@@ -461,6 +510,14 @@ export default function App() {
         </div>
       )}
 
+      {!isActorsPage && !isCharactersPage && !isShowsPage && (
+        <div className="app__toolbar">
+          <button className="app__button" type="button" onClick={() => setIsEpisodeModalOpen(true)}>
+            Adicionar Episódio
+          </button>
+        </div>
+      )}
+
       {(isActorsPage ? actorsErr : isCharactersPage ? charactersErr : isShowsPage ? showsErr : episodesErr) && (
         <div className="app__error">
           Erro: {isActorsPage ? actorsErr : isCharactersPage ? charactersErr : isShowsPage ? showsErr : episodesErr}
@@ -558,6 +615,17 @@ export default function App() {
         isOpen={isShowModalOpen}
         onClose={() => setIsShowModalOpen(false)}
         onSubmit={handleCreateShow}
+      />
+
+      <AddEpisodeModal
+        isOpen={isEpisodeModalOpen}
+        onClose={() => setIsEpisodeModalOpen(false)}
+        shows={episodeShows}
+        showsLoading={episodeShowsLoading}
+        showsError={episodeShowsErr}
+        characters={episodeCharacters}
+        charactersLoading={episodeCharactersLoading}
+        charactersError={episodeCharactersErr}
       />
     </div>
   );
