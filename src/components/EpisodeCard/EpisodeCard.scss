@@ -47,6 +47,10 @@
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+
+  .badge {
+    color: $text;
+  }
 }
 
 .episode-card__meta {
