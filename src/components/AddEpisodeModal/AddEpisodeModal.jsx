@@ -29,6 +29,7 @@ function getOptionKey(item) {
 export default function AddEpisodeModal({
   isOpen,
   onClose,
+  onSubmit,
   shows,
   showsLoading,
   showsError,
@@ -38,11 +39,15 @@ export default function AddEpisodeModal({
 }) {
   const [formData, setFormData] = useState(initialFormState);
   const [selectedCharacters, setSelectedCharacters] = useState([]);
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setFormData(initialFormState);
       setSelectedCharacters([]);
+      setError("");
+      setSubmitting(false);
     }
   }, [isOpen]);
 
@@ -86,8 +91,40 @@ export default function AddEpisodeModal({
     setSelectedCharacters((prev) => prev.filter((character) => getOptionKey(character) !== key));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
+    setError("");
+
+    const selectedShow = showOptions.find((show) => getOptionKey(show) === formData.showId);
+    if (!selectedShow) {
+      setError("Selecione um show válido.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await onSubmit({
+        show: {
+          id: selectedShow.id,
+          name: selectedShow.name ?? selectedShow.namePt ?? "",
+          nameEs: selectedShow.nameEs ?? selectedShow.nameES ?? "",
+          startDate: selectedShow.startDate ?? "",
+          endDate: selectedShow.endDate ?? "",
+        },
+        episodeNumber: Number(formData.episodeNumber),
+        season: Number(formData.season),
+        airDate: formData.airDate,
+        title: formData.name.trim(),
+        titleES: formData.nameEs.trim(),
+        synopsisPT: formData.synopsis.trim(),
+        synopsisEs: formData.synopsisEs.trim(),
+      });
+      onClose();
+    } catch (ex) {
+      setError(ex.message || String(ex));
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -245,6 +282,8 @@ export default function AddEpisodeModal({
             </div>
           )}
 
+          {error && <div className="add-episode-modal__error">Erro: {error}</div>}
+
           {selectedCharacters.length > 0 && (
             <div className="add-episode-modal__badges" aria-label="Personagens selecionados">
               {selectedCharacters.map((character, index) => {
@@ -262,8 +301,12 @@ export default function AddEpisodeModal({
             <button className="add-episode-modal__button" type="button" onClick={onClose}>
               Cancelar
             </button>
-            <button className="add-episode-modal__button add-episode-modal__button--primary" type="submit">
-              Adicionar
+            <button
+              className="add-episode-modal__button add-episode-modal__button--primary"
+              type="submit"
+              disabled={submitting}
+            >
+              {submitting ? "Salvando..." : "Adicionar"}
             </button>
           </div>
         </form>

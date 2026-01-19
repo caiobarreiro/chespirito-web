@@ -160,3 +160,39 @@ export async function createShow({ name, nameEs, startDate, endDate }) {
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
+
+export async function createEpisode({
+  show,
+  episodeNumber,
+  season,
+  airDate,
+  title,
+  titleES,
+  synopsisPT,
+  synopsisEs,
+}) {
+  const base = requireApiBase();
+
+  // NÃO comece com "/" aqui
+  const url = new URL("episodes", base);
+
+  const res = await fetch(url.toString(), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      show,
+      episodeNumber,
+      season,
+      airDate,
+      title,
+      titleES,
+      synopsisPT,
+      synopsisEs,
+    }),
+  });
+
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
