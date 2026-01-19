@@ -20,6 +20,7 @@ export default function CharacterModal({
   loading,
   error,
   onClose,
+  onBack,
   onShowSelect,
 }) {
   if (!character) return null;
@@ -67,7 +68,16 @@ export default function CharacterModal({
     <div className="character-modal" role="dialog" aria-modal="true" onClick={onClose}>
       <div className="character-modal__panel" onClick={(event) => event.stopPropagation()}>
         <div className="character-modal__header">
-          <h2 className="character-modal__title">Episódios com {getCharacterName(character)}</h2>
+          <div className="character-modal__header-main">
+            {onBack && (
+              <button className="character-modal__back" type="button" onClick={onBack}>
+                ← Voltar
+              </button>
+            )}
+            <h2 className="character-modal__title">
+              Episódios com {getCharacterName(character)}
+            </h2>
+          </div>
           <button className="character-modal__close" type="button" onClick={onClose}>
             Fechar
           </button>

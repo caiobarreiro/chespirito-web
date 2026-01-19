@@ -45,6 +45,7 @@ export default function App() {
   const [showsItems, setShowsItems] = useState([]);
   const [selectedCharacter, setSelectedCharacter] = useState(null);
   const [selectedEpisode, setSelectedEpisode] = useState(null);
+  const [episodeModalReturn, setEpisodeModalReturn] = useState(null);
   const [characterEpisodes, setCharacterEpisodes] = useState([]);
   const [characterEpisodesLoading, setCharacterEpisodesLoading] = useState(false);
   const [characterEpisodesErr, setCharacterEpisodesErr] = useState("");
@@ -330,7 +331,10 @@ export default function App() {
   useEffect(() => {
     if (!selectedCharacter) return;
     function handleKeyDown(event) {
-      if (event.key === "Escape") setSelectedCharacter(null);
+      if (event.key === "Escape") {
+        setSelectedCharacter(null);
+        setEpisodeModalReturn(null);
+      }
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
@@ -406,6 +410,31 @@ export default function App() {
           (episode) => getNormalizedShowKey(episode.show) === selectedEpisodeShowKey,
         )
       : episodesItems;
+
+  const handleCharacterSelect = (character) => {
+    setEpisodeModalReturn(null);
+    setSelectedCharacter(character);
+  };
+
+  const handleCharacterSelectFromEpisode = (character) => {
+    if (selectedEpisode) {
+      setEpisodeModalReturn(selectedEpisode);
+      setSelectedEpisode(null);
+    }
+    setSelectedCharacter(character);
+  };
+
+  const handleCloseCharacterModal = () => {
+    setSelectedCharacter(null);
+    setEpisodeModalReturn(null);
+  };
+
+  const handleBackToEpisode = () => {
+    if (!episodeModalReturn) return;
+    setSelectedCharacter(null);
+    setSelectedEpisode(episodeModalReturn);
+    setEpisodeModalReturn(null);
+  };
 
   return (
     <div className="app">
@@ -561,7 +590,7 @@ export default function App() {
             <ActorCard
               key={actor.id ?? actor.name ?? index}
               actor={actor}
-              onSelect={(value) => setSelectedCharacter(value)}
+              onSelect={handleCharacterSelect}
             />
           ))}
         </main>
@@ -575,7 +604,7 @@ export default function App() {
             <CharacterCard
               key={character.id ?? character.name ?? index}
               character={character}
-              onSelect={(value) => setSelectedCharacter(value)}
+              onSelect={handleCharacterSelect}
             />
           ))}
         </main>
@@ -599,7 +628,7 @@ export default function App() {
             <EpisodeCard
               key={ep.id}
               episode={ep}
-              onSelect={(value) => setSelectedCharacter(value)}
+              onSelect={handleCharacterSelect}
               onEpisodeSelect={(value) => setSelectedEpisode(value)}
               onShowSelect={(value) => setSelectedShow(value)}
             />
@@ -612,7 +641,8 @@ export default function App() {
         episodes={characterEpisodes}
         loading={characterEpisodesLoading}
         error={characterEpisodesErr}
-        onClose={() => setSelectedCharacter(null)}
+        onClose={handleCloseCharacterModal}
+        onBack={episodeModalReturn ? handleBackToEpisode : null}
         onShowSelect={(value) => setSelectedShow(value)}
       />
 
@@ -624,7 +654,11 @@ export default function App() {
         onClose={() => setSelectedShow(null)}
       />
 
-      <EpisodeModal episode={selectedEpisode} onClose={() => setSelectedEpisode(null)} />
+      <EpisodeModal
+        episode={selectedEpisode}
+        onClose={() => setSelectedEpisode(null)}
+        onCharacterSelect={handleCharacterSelectFromEpisode}
+      />
 
       <ActorModal
         isOpen={isActorModalOpen}
