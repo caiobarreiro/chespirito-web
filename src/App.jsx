@@ -301,7 +301,8 @@ export default function App() {
 
   useEffect(() => {
     if (!selectedCharacter) return;
-    if (!selectedCharacter.id) {
+    const characterId = selectedCharacter.id ?? selectedCharacter.uuid;
+    if (!characterId) {
       setCharacterEpisodes([]);
       setCharacterEpisodesErr("Personagem sem identificador.");
       return;
@@ -312,7 +313,7 @@ export default function App() {
     setCharacterEpisodesErr("");
     setCharacterEpisodesLoading(true);
 
-    fetchEpisodesByCharacter({ characterId: selectedCharacter.id })
+    fetchEpisodesByCharacter({ characterId })
       .then((data) => {
         if (!isActive) return;
         setCharacterEpisodes(data);
@@ -427,7 +428,7 @@ export default function App() {
     try {
       const data = await fetchCharacter({ characterId });
       if (fetchId !== characterFetchIdRef.current) return;
-      setSelectedCharacter(data);
+      setSelectedCharacter(data?.character ?? data);
     } catch (ex) {
       if (fetchId !== characterFetchIdRef.current) return;
       setCharacterDetailsErr(ex.message || String(ex));
