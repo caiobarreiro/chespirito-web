@@ -52,8 +52,6 @@ export default function AddEpisodeModal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
-
   const showOptions = Array.isArray(shows) ? shows : [];
   const characterOptions = Array.isArray(characters) ? characters : [];
 
@@ -61,6 +59,8 @@ export default function AddEpisodeModal({
     () => new Set(selectedCharacters.map((character) => getOptionKey(character))),
     [selectedCharacters],
   );
+
+  if (!isOpen) return null;
 
   function handleChange(event) {
     const { name, value } = event.target;
