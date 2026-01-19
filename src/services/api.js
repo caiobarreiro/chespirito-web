@@ -52,6 +52,21 @@ export async function fetchCharacters({ q }) {
   return Array.isArray(data) ? data : [];
 }
 
+export async function fetchShows({ q }) {
+  const base = requireApiBase();
+
+  // NÃO comece com "/" aqui
+  const url = new URL("shows", base);
+
+  const qq = (q ?? "").trim();
+  if (qq) url.searchParams.set("q", qq);
+
+  const res = await fetch(url.toString());
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+}
+
 export async function fetchEpisodesByCharacter({ characterId }) {
   const base = requireApiBase();
 
@@ -116,6 +131,29 @@ export async function createCharacter({ name, nameEs, actor }) {
       name,
       nameEs,
       actor,
+    }),
+  });
+
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function createShow({ name, nameEs, startDate, endData }) {
+  const base = requireApiBase();
+
+  // NÃO comece com "/" aqui
+  const url = new URL("shows", base);
+
+  const res = await fetch(url.toString(), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name,
+      nameEs,
+      startDate,
+      endData,
     }),
   });
 

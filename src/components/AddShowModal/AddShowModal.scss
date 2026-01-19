@@ -1,0 +1,106 @@
+@use "../../styles/variables" as *;
+
+.add-show-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.7);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  z-index: 20;
+}
+
+.add-show-modal__panel {
+  width: min(520px, 100%);
+  background: #0f172a;
+  border-radius: $radius;
+  border: 1px solid $border;
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+}
+
+.add-show-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.add-show-modal__title {
+  margin: 0;
+  color: white;
+  font-size: 1.1rem;
+}
+
+.add-show-modal__close {
+  border: none;
+  background: transparent;
+  color: $muted;
+  cursor: pointer;
+}
+
+.add-show-modal__close:hover {
+  color: white;
+}
+
+.add-show-modal__form {
+  display: grid;
+  gap: 12px;
+}
+
+.add-show-modal__field {
+  display: grid;
+  gap: 6px;
+}
+
+.add-show-modal__label {
+  color: $muted;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.add-show-modal__input {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 10px 12px;
+  color: white;
+}
+
+.add-show-modal__input:focus {
+  outline: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.add-show-modal__error {
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 10px 12px;
+  border-radius: $radius;
+}
+
+.add-show-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.add-show-modal__button {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: white;
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.add-show-modal__button--primary {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.add-show-modal__button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
