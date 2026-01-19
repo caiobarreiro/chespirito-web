@@ -3,9 +3,10 @@
 .episode-card {
   border: 1px solid $border;
   border-radius: $radius;
-  background: $card;
-  box-shadow: $shadow;
-  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 16px;
+  display: grid;
+  gap: 10px;
 }
 
 .episode-card__header {
@@ -23,8 +24,9 @@
 }
 
 .episode-card__title {
-  font-size: 18px;
-  font-weight: 800;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
 }
 
 .episode-card__subtitle {
@@ -32,19 +34,16 @@
 }
 
 .episode-card__badges {
-  margin-top: 10px;
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
 
 .episode-card__meta {
-  margin-top: 10px;
   color: $muted;
-  font-size: 14px;
+  font-size: 0.9rem;
 }
 
 .episode-card__synopsis {
-  margin-top: 10px;
   white-space: pre-wrap;
 }
