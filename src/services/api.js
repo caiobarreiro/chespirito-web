@@ -52,6 +52,20 @@ export async function fetchCharacters({ q }) {
   return Array.isArray(data) ? data : [];
 }
 
+export async function fetchCharacter({ characterId }) {
+  const base = requireApiBase();
+
+  if (!characterId) {
+    throw new Error("characterId is required");
+  }
+
+  const url = new URL(`character/${characterId}`, base);
+
+  const res = await fetch(url.toString());
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
 export async function fetchShows({ q }) {
   const base = requireApiBase();
 

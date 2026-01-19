@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import SearchBar from "./components/SearchBar/SearchBar.jsx";
 import EpisodeCard from "./components/EpisodeCard/EpisodeCard.jsx";
 import ActorCard from "./components/ActorCard/ActorCard.jsx";
@@ -18,6 +18,7 @@ import {
   fetchEpisodesByCharacter,
   fetchEpisodesByShow,
   fetchShows,
+  fetchCharacter,
   createActor,
   createCharacter,
   createShow,
@@ -46,9 +47,11 @@ export default function App() {
   const [selectedCharacter, setSelectedCharacter] = useState(null);
   const [selectedEpisode, setSelectedEpisode] = useState(null);
   const [episodeModalReturn, setEpisodeModalReturn] = useState(null);
+  const characterFetchIdRef = useRef(0);
   const [characterEpisodes, setCharacterEpisodes] = useState([]);
   const [characterEpisodesLoading, setCharacterEpisodesLoading] = useState(false);
   const [characterEpisodesErr, setCharacterEpisodesErr] = useState("");
+  const [characterDetailsErr, setCharacterDetailsErr] = useState("");
   const [selectedShow, setSelectedShow] = useState(null);
   const [showEpisodes, setShowEpisodes] = useState([]);
   const [showEpisodesLoading, setShowEpisodesLoading] = useState(false);
@@ -411,9 +414,29 @@ export default function App() {
         )
       : episodesItems;
 
+  const openCharacterModal = async (character) => {
+    setCharacterDetailsErr("");
+    setSelectedCharacter(character);
+
+    const characterId = character?.id ?? character?.uuid;
+    if (!characterId) return;
+
+    characterFetchIdRef.current += 1;
+    const fetchId = characterFetchIdRef.current;
+
+    try {
+      const data = await fetchCharacter({ characterId });
+      if (fetchId !== characterFetchIdRef.current) return;
+      setSelectedCharacter(data);
+    } catch (ex) {
+      if (fetchId !== characterFetchIdRef.current) return;
+      setCharacterDetailsErr(ex.message || String(ex));
+    }
+  };
+
   const handleCharacterSelect = (character) => {
     setEpisodeModalReturn(null);
-    setSelectedCharacter(character);
+    openCharacterModal(character);
   };
 
   const handleCharacterSelectFromEpisode = (character) => {
@@ -421,12 +444,14 @@ export default function App() {
       setEpisodeModalReturn(selectedEpisode);
       setSelectedEpisode(null);
     }
-    setSelectedCharacter(character);
+    openCharacterModal(character);
   };
 
   const handleCloseCharacterModal = () => {
+    characterFetchIdRef.current += 1;
     setSelectedCharacter(null);
     setEpisodeModalReturn(null);
+    setCharacterDetailsErr("");
   };
 
   const handleBackToEpisode = () => {
@@ -640,7 +665,7 @@ export default function App() {
         character={selectedCharacter}
         episodes={characterEpisodes}
         loading={characterEpisodesLoading}
-        error={characterEpisodesErr}
+        error={characterDetailsErr || characterEpisodesErr}
         onClose={handleCloseCharacterModal}
         onBack={episodeModalReturn ? handleBackToEpisode : null}
         onShowSelect={(value) => setSelectedShow(value)}
