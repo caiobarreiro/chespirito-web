@@ -52,10 +52,13 @@ export default function AddCharacterModal({
     setError("");
     setSubmitting(true);
     try {
+      const selectedActor = actorOptions.find(
+        (actor) => String(actor.id ?? actor.name ?? "") === String(formData.actorId),
+      );
       await onSubmit({
         name: formData.name.trim(),
         nameEs: formData.nameEs.trim(),
-        actorId: formData.actorId,
+        actor: selectedActor ?? null,
       });
       onClose();
     } catch (ex) {
