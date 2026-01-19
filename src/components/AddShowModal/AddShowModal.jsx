@@ -109,7 +109,7 @@ export default function AddShowModal({ isOpen, onClose, onSubmit }) {
               className="add-show-modal__input"
               type="date"
               name="endData"
-              value={formData.endData}
+              value={formData.endDate}
               onChange={handleChange}
             />
           </label>
