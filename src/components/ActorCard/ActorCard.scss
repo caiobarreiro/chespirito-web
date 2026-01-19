@@ -9,6 +9,16 @@
   gap: 10px;
 }
 
+.actor-card--clickable {
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.actor-card--clickable:hover {
+  border-color: rgba(148, 163, 184, 0.6);
+  background: rgba(148, 163, 184, 0.08);
+}
+
 .actor-card__title {
   font-size: 1.1rem;
   font-weight: 600;

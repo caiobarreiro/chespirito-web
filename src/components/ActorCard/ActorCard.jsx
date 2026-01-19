@@ -5,7 +5,7 @@ function getActorName(actor) {
   return actor?.name ?? actor?.actor ?? actor?.fullName ?? "Nome não informado";
 }
 
-export default function ActorCard({ actor, onSelect }) {
+export default function ActorCard({ actor, onSelect, onOpen }) {
   const roles = Array.isArray(actor?.characters)
     ? actor.characters
     : Array.isArray(actor?.roles)
@@ -13,9 +13,25 @@ export default function ActorCard({ actor, onSelect }) {
     : [];
 
   const shows = Array.isArray(actor?.shows) ? actor.shows : [];
+  const isClickable = Boolean(onOpen);
 
   return (
-    <div className="actor-card">
+    <div
+      className={isClickable ? "actor-card actor-card--clickable" : "actor-card"}
+      role={isClickable ? "button" : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      onClick={onOpen}
+      onKeyDown={
+        isClickable
+          ? (event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onOpen();
+              }
+            }
+          : undefined
+      }
+    >
       <div className="actor-card__title">{getActorName(actor)}</div>
 
       {roles.length > 0 && (
@@ -29,7 +45,14 @@ export default function ActorCard({ actor, onSelect }) {
                 <Badge
                   key={name}
                   title={name}
-                  onClick={onSelect ? () => onSelect(typeof role === "string" ? { name } : role) : undefined}
+                  onClick={
+                    onSelect
+                      ? (event) => {
+                          event.stopPropagation();
+                          onSelect(typeof role === "string" ? { name } : role);
+                        }
+                      : undefined
+                  }
                 >
                   {name}
                 </Badge>
