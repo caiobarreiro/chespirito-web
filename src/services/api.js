@@ -138,7 +138,7 @@ export async function createCharacter({ name, nameEs, actor }) {
   return res.json();
 }
 
-export async function createShow({ name, nameEs, startDate, endData }) {
+export async function createShow({ name, nameEs, startDate, endDate }) {
   const base = requireApiBase();
 
   // NÃO comece com "/" aqui
@@ -153,7 +153,7 @@ export async function createShow({ name, nameEs, startDate, endData }) {
       name,
       nameEs,
       startDate,
-      endData,
+      endDate,
     }),
   });
 
