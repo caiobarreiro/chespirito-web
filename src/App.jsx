@@ -3,18 +3,22 @@ import SearchBar from "./components/SearchBar/SearchBar.jsx";
 import EpisodeCard from "./components/EpisodeCard/EpisodeCard.jsx";
 import ActorCard from "./components/ActorCard/ActorCard.jsx";
 import CharacterCard from "./components/CharacterCard/CharacterCard.jsx";
+import ShowCard from "./components/ShowCard/ShowCard.jsx";
 import CharacterModal from "./components/CharacterModal/CharacterModal.jsx";
 import ShowModal from "./components/ShowModal/ShowModal.jsx";
 import ActorModal from "./components/ActorModal/ActorModal.jsx";
 import AddCharacterModal from "./components/AddCharacterModal/AddCharacterModal.jsx";
+import AddShowModal from "./components/AddShowModal/AddShowModal.jsx";
 import {
   fetchActors,
   fetchCharacters,
   fetchEpisodes,
   fetchEpisodesByCharacter,
   fetchEpisodesByShow,
+  fetchShows,
   createActor,
   createCharacter,
+  createShow,
 } from "./services/api.js";
 import "./App.scss";
 
@@ -31,6 +35,10 @@ export default function App() {
   const [charactersLoading, setCharactersLoading] = useState(false);
   const [charactersErr, setCharactersErr] = useState("");
   const [charactersItems, setCharactersItems] = useState([]);
+  const [showsQuery, setShowsQuery] = useState("");
+  const [showsLoading, setShowsLoading] = useState(false);
+  const [showsErr, setShowsErr] = useState("");
+  const [showsItems, setShowsItems] = useState([]);
   const [selectedCharacter, setSelectedCharacter] = useState(null);
   const [characterEpisodes, setCharacterEpisodes] = useState([]);
   const [characterEpisodesLoading, setCharacterEpisodesLoading] = useState(false);
@@ -44,6 +52,8 @@ export default function App() {
   const [actorCreateErr, setActorCreateErr] = useState("");
   const [isCharacterModalOpen, setIsCharacterModalOpen] = useState(false);
   const [characterCreateErr, setCharacterCreateErr] = useState("");
+  const [isShowModalOpen, setIsShowModalOpen] = useState(false);
+  const [showCreateErr, setShowCreateErr] = useState("");
   const [characterActors, setCharacterActors] = useState([]);
   const [characterActorsLoading, setCharacterActorsLoading] = useState(false);
   const [characterActorsErr, setCharacterActorsErr] = useState("");
@@ -76,6 +86,7 @@ export default function App() {
 
   const isActorsPage = path === "/actors";
   const isCharactersPage = path === "/characters";
+  const isShowsPage = path === "/shows";
 
   function getStateFor(route) {
     if (route === "actors") {
@@ -96,6 +107,15 @@ export default function App() {
       };
     }
 
+    if (route === "shows") {
+      return {
+        query: showsQuery,
+        setItems: setShowsItems,
+        setLoading: setShowsLoading,
+        setErr: setShowsErr,
+      };
+    }
+
     return {
       query: episodesQuery,
       setItems: setEpisodesItems,
@@ -106,7 +126,7 @@ export default function App() {
 
   async function runSearch(
     e,
-    route = isActorsPage ? "actors" : isCharactersPage ? "characters" : "episodes",
+    route = isActorsPage ? "actors" : isCharactersPage ? "characters" : isShowsPage ? "shows" : "episodes",
   ) {
     e?.preventDefault();
     const { query, setItems, setLoading, setErr } = getStateFor(route);
@@ -118,6 +138,8 @@ export default function App() {
           ? await fetchActors({ q: query })
           : route === "characters"
           ? await fetchCharacters({ q: query })
+          : route === "shows"
+          ? await fetchShows({ q: query })
           : await fetchEpisodes({ q: query });
       setItems(data);
     } catch (ex) {
@@ -131,8 +153,9 @@ export default function App() {
   useEffect(() => {
     if (isActorsPage) runSearch(null, "actors");
     if (isCharactersPage) runSearch(null, "characters");
+    if (isShowsPage) runSearch(null, "shows");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isActorsPage, isCharactersPage]);
+  }, [isActorsPage, isCharactersPage, isShowsPage]);
 
   async function handleCreateActor(payload) {
     setActorCreateErr("");
@@ -156,6 +179,19 @@ export default function App() {
       }
     } catch (ex) {
       setCharacterCreateErr(ex.message || String(ex));
+      throw ex;
+    }
+  }
+
+  async function handleCreateShow(payload) {
+    setShowCreateErr("");
+    try {
+      await createShow(payload);
+      if (isShowsPage) {
+        runSearch(null, "shows");
+      }
+    } catch (ex) {
+      setShowCreateErr(ex.message || String(ex));
       throw ex;
     }
   }
@@ -305,7 +341,7 @@ export default function App() {
           <a
             className="app__nav-link"
             href="/"
-            aria-current={!isActorsPage ? "page" : undefined}
+            aria-current={!isActorsPage && !isCharactersPage && !isShowsPage ? "page" : undefined}
             onClick={(event) => {
               event.preventDefault();
               navigate("/");
@@ -335,24 +371,49 @@ export default function App() {
           >
             Personagens
           </a>
+          <a
+            className="app__nav-link"
+            href="/shows"
+            aria-current={isShowsPage ? "page" : undefined}
+            onClick={(event) => {
+              event.preventDefault();
+              navigate("/shows");
+            }}
+          >
+            Seriados
+          </a>
         </nav>
       </header>
 
       <SearchBar
-        value={isActorsPage ? actorsQuery : isCharactersPage ? charactersQuery : episodesQuery}
-        onChange={isActorsPage ? setActorsQuery : isCharactersPage ? setCharactersQuery : setEpisodesQuery}
+        value={
+          isActorsPage ? actorsQuery : isCharactersPage ? charactersQuery : isShowsPage ? showsQuery : episodesQuery
+        }
+        onChange={
+          isActorsPage
+            ? setActorsQuery
+            : isCharactersPage
+            ? setCharactersQuery
+            : isShowsPage
+            ? setShowsQuery
+            : setEpisodesQuery
+        }
         onSubmit={runSearch}
-        loading={isActorsPage ? actorsLoading : isCharactersPage ? charactersLoading : episodesLoading}
+        loading={
+          isActorsPage ? actorsLoading : isCharactersPage ? charactersLoading : isShowsPage ? showsLoading : episodesLoading
+        }
         placeholder={
           isActorsPage
             ? "Digite: churros, barril, elenco… (vazio = lista tudo)"
             : isCharactersPage
             ? "Digite: chaves, nhonho, barriga… (vazio = lista tudo)"
+            : isShowsPage
+            ? "Digite: chaves, chapolin… (vazio = lista tudo)"
             : "Digite: florinda, renta, aluguel, torta de jamón… (vazio = lista tudo)"
         }
       />
 
-      {!isActorsPage && !isCharactersPage && episodeShowFilters.length > 1 && (
+      {!isActorsPage && !isCharactersPage && !isShowsPage && episodeShowFilters.length > 1 && (
         <div className="app__show-filters" role="tablist" aria-label="Filtrar por série">
           {episodeShowFilters.map((show) => (
             <button
@@ -391,9 +452,18 @@ export default function App() {
         </div>
       )}
 
-      {(isActorsPage ? actorsErr : isCharactersPage ? charactersErr : episodesErr) && (
+      {isShowsPage && (
+        <div className="app__toolbar">
+          <button className="app__button" type="button" onClick={() => setIsShowModalOpen(true)}>
+            Adicionar Show
+          </button>
+          {showCreateErr && <div className="app__error">Erro: {showCreateErr}</div>}
+        </div>
+      )}
+
+      {(isActorsPage ? actorsErr : isCharactersPage ? charactersErr : isShowsPage ? showsErr : episodesErr) && (
         <div className="app__error">
-          Erro: {isActorsPage ? actorsErr : isCharactersPage ? charactersErr : episodesErr}
+          Erro: {isActorsPage ? actorsErr : isCharactersPage ? charactersErr : isShowsPage ? showsErr : episodesErr}
         </div>
       )}
 
@@ -423,6 +493,16 @@ export default function App() {
               character={character}
               onSelect={(value) => setSelectedCharacter(value)}
             />
+          ))}
+        </main>
+      ) : isShowsPage ? (
+        <main className="app__results">
+          {!showsLoading && !showsErr && showsItems.length === 0 && (
+            <div className="app__empty">Nenhum show encontrado.</div>
+          )}
+
+          {showsItems.map((show, index) => (
+            <ShowCard key={show.id ?? show.name ?? index} show={show} />
           ))}
         </main>
       ) : (
@@ -472,6 +552,12 @@ export default function App() {
         actors={characterActors}
         actorsLoading={characterActorsLoading}
         actorsError={characterActorsErr}
+      />
+
+      <AddShowModal
+        isOpen={isShowModalOpen}
+        onClose={() => setIsShowModalOpen(false)}
+        onSubmit={handleCreateShow}
       />
     </div>
   );

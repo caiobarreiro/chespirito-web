@@ -1,0 +1,38 @@
+@use "../../styles/variables" as *;
+
+.show-card {
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  display: grid;
+  gap: 10px;
+}
+
+.show-card__title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: white;
+}
+
+.show-card__subtitle {
+  color: $muted;
+  font-size: 0.95rem;
+}
+
+.show-card__dates {
+  display: grid;
+  gap: 6px;
+}
+
+.show-card__date {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: white;
+  font-size: 0.95rem;
+}
+
+.show-card__label {
+  color: $muted;
+}
