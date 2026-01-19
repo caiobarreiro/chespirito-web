@@ -101,7 +101,7 @@ export async function createActor({ name, fullName, dob, dod }) {
   return res.json();
 }
 
-export async function createCharacter({ name, nameEs, actorId }) {
+export async function createCharacter({ name, nameEs, actor }) {
   const base = requireApiBase();
 
   // NÃO comece com "/" aqui
@@ -115,7 +115,7 @@ export async function createCharacter({ name, nameEs, actorId }) {
     body: JSON.stringify({
       name,
       nameEs,
-      actorId,
+      actor,
     }),
   });
 
