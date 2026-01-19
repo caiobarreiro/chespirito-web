@@ -21,6 +21,7 @@ import {
   createCharacter,
   createShow,
   createEpisode,
+  updateEpisodeCharacters,
 } from "./services/api.js";
 import "./App.scss";
 
@@ -209,7 +210,15 @@ export default function App() {
   async function handleCreateEpisode(payload) {
     setEpisodeCreateErr("");
     try {
-      await createEpisode(payload);
+      const { characters = [], ...episodePayload } = payload ?? {};
+      const createdEpisode = await createEpisode(episodePayload);
+      const episodeId = createdEpisode?.uuid ?? createdEpisode?.id;
+      if (!episodeId) {
+        throw new Error("Resposta da API sem identificador do episódio.");
+      }
+      if (Array.isArray(characters) && characters.length > 0) {
+        await updateEpisodeCharacters({ episodeId, characters });
+      }
       if (!isActorsPage && !isCharactersPage && !isShowsPage) {
         runSearch(null, "episodes");
       }

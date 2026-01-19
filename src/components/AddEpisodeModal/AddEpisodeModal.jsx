@@ -111,6 +111,7 @@ export default function AddEpisodeModal({
           startDate: selectedShow.startDate ?? "",
           endDate: selectedShow.endDate ?? "",
         },
+        characters: selectedCharacters,
         episodeNumber: Number(formData.episodeNumber),
         season: Number(formData.season),
         airDate: formData.airDate,
