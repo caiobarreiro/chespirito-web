@@ -5,7 +5,7 @@ const initialFormState = {
   name: "",
   nameEs: "",
   startDate: "",
-  endData: "",
+  endDate: "",
 };
 
 export default function AddShowModal({ isOpen, onClose, onSubmit }) {
@@ -108,7 +108,7 @@ export default function AddShowModal({ isOpen, onClose, onSubmit }) {
             <input
               className="add-show-modal__input"
               type="date"
-              name="endData"
+              name="endDate"
               value={formData.endDate}
               onChange={handleChange}
             />

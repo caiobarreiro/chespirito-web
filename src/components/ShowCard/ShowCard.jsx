@@ -21,7 +21,7 @@ export default function ShowCard({ show, onSelect }) {
   const name = getShowField(show, "name", "namePt") ?? "Show sem nome";
   const nameEs = getShowField(show, "nameEs");
   const startDate = formatShowDate(getShowField(show, "startDate"));
-  const endDate = formatShowDate(getShowField(show, "endData", "endDate"));
+  const endDate = formatShowDate(getShowField(show, "endDate", "endDate"));
   const isClickable = typeof onSelect === "function";
 
   function handleKeyDown(event) {
