@@ -6,6 +6,9 @@ const initialFormState = {
   showId: "",
   name: "",
   nameEs: "",
+  airDate: "",
+  season: "",
+  episodeNumber: "",
   synopsis: "",
   synopsisEs: "",
   characterId: "",
@@ -144,6 +147,48 @@ export default function AddEpisodeModal({
               required
             />
           </label>
+
+          <label className="add-episode-modal__field">
+            <span className="add-episode-modal__label">Data de estréia</span>
+            <input
+              className="add-episode-modal__input"
+              type="date"
+              name="airDate"
+              value={formData.airDate}
+              onChange={handleChange}
+              required
+            />
+          </label>
+
+          <div className="add-episode-modal__row">
+            <label className="add-episode-modal__field">
+              <span className="add-episode-modal__label">Temporada</span>
+              <input
+                className="add-episode-modal__input"
+                type="number"
+                name="season"
+                value={formData.season}
+                onChange={handleChange}
+                min="1"
+                placeholder="Número"
+                required
+              />
+            </label>
+
+            <label className="add-episode-modal__field">
+              <span className="add-episode-modal__label">Episódio</span>
+              <input
+                className="add-episode-modal__input"
+                type="number"
+                name="episodeNumber"
+                value={formData.episodeNumber}
+                onChange={handleChange}
+                min="1"
+                placeholder="Número"
+                required
+              />
+            </label>
+          </div>
 
           <label className="add-episode-modal__field">
             <span className="add-episode-modal__label">Sinopse</span>
