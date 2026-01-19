@@ -78,6 +78,10 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+
+  .badge {
+    color: #111827;
+  }
 }
 
 .episode-modal__synopsis {

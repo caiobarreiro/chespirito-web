@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import Badge from "../Badge/Badge.jsx";
 import "./EpisodeModal.scss";
 
-export default function EpisodeModal({ episode, onClose }) {
+export default function EpisodeModal({ episode, onClose, onCharacterSelect }) {
   const [language, setLanguage] = useState("pt");
 
   useEffect(() => {
@@ -24,6 +24,12 @@ export default function EpisodeModal({ episode, onClose }) {
 
   const characters = Array.isArray(episode?.characters) ? episode.characters : [];
   const synopsis = language === "es" ? episode?.synopsisEs : episode?.synopsisPt;
+
+  const handleCharacterSelect = (character) => {
+    if (onCharacterSelect) {
+      onCharacterSelect(character);
+    }
+  };
 
   if (!episode) return null;
 
@@ -52,7 +58,13 @@ export default function EpisodeModal({ episode, onClose }) {
             <div className="episode-modal__label">Personagens</div>
             <div className="episode-modal__badges">
               {characters.map((character) => (
-                <Badge key={character.id ?? character.name} title={character.name}>
+                <Badge
+                  key={character.id ?? character.name}
+                  title={character.name}
+                  onClick={
+                    onCharacterSelect ? () => handleCharacterSelect(character) : undefined
+                  }
+                >
                   {character.name}
                 </Badge>
               ))}
