@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import SearchBar from "./components/SearchBar/SearchBar.jsx";
 import EpisodeCard from "./components/EpisodeCard/EpisodeCard.jsx";
 import ActorCard from "./components/ActorCard/ActorCard.jsx";
@@ -47,6 +47,15 @@ export default function App() {
   const [characterActors, setCharacterActors] = useState([]);
   const [characterActorsLoading, setCharacterActorsLoading] = useState(false);
   const [characterActorsErr, setCharacterActorsErr] = useState("");
+  const [selectedEpisodeShowKey, setSelectedEpisodeShowKey] = useState("all");
+
+  function getShowName(show) {
+    return typeof show === "string" ? show : show?.name ?? show?.namePt ?? "";
+  }
+
+  function getNormalizedShowKey(show) {
+    return getShowName(show).trim().toLowerCase();
+  }
 
   useEffect(() => {
     function handlePopState() {
@@ -248,6 +257,45 @@ export default function App() {
     };
   }, [selectedShow]);
 
+  const episodeShowOptions = useMemo(() => {
+    const options = new Map();
+
+    episodesItems.forEach((episode) => {
+      if (!episode?.show) return;
+      const label = getShowName(episode.show);
+      const key = getNormalizedShowKey(episode.show);
+      if (!label || !key) return;
+      if (!options.has(key)) {
+        options.set(key, { key, label });
+      }
+    });
+
+    return Array.from(options.values());
+  }, [episodesItems]);
+
+  const episodeShowFilters = useMemo(() => {
+    if (episodeShowOptions.length <= 1) return episodeShowOptions;
+    return [{ key: "all", label: "Todos" }, ...episodeShowOptions];
+  }, [episodeShowOptions]);
+
+  useEffect(() => {
+    if (episodeShowFilters.length === 0) {
+      setSelectedEpisodeShowKey("all");
+      return;
+    }
+
+    if (!episodeShowFilters.some((option) => option.key === selectedEpisodeShowKey)) {
+      setSelectedEpisodeShowKey(episodeShowFilters[0].key);
+    }
+  }, [episodeShowFilters, selectedEpisodeShowKey]);
+
+  const filteredEpisodes =
+    selectedEpisodeShowKey && selectedEpisodeShowKey !== "all"
+      ? episodesItems.filter(
+          (episode) => getNormalizedShowKey(episode.show) === selectedEpisodeShowKey,
+        )
+      : episodesItems;
+
   return (
     <div className="app">
       <header className="app__header">
@@ -303,6 +351,27 @@ export default function App() {
             : "Digite: florinda, renta, aluguel, torta de jamón… (vazio = lista tudo)"
         }
       />
+
+      {!isActorsPage && !isCharactersPage && episodeShowFilters.length > 1 && (
+        <div className="app__show-filters" role="tablist" aria-label="Filtrar por série">
+          {episodeShowFilters.map((show) => (
+            <button
+              key={show.key}
+              className={
+                show.key === selectedEpisodeShowKey
+                  ? "app__show-filter app__show-filter--active"
+                  : "app__show-filter"
+              }
+              type="button"
+              role="tab"
+              aria-selected={show.key === selectedEpisodeShowKey}
+              onClick={() => setSelectedEpisodeShowKey(show.key)}
+            >
+              {show.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {isActorsPage && (
         <div className="app__toolbar">
@@ -362,7 +431,7 @@ export default function App() {
             <div className="app__empty">Nenhum resultado.</div>
           )}
 
-          {episodesItems.map((ep) => (
+          {filteredEpisodes.map((ep) => (
             <EpisodeCard
               key={ep.id}
               episode={ep}

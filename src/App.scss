@@ -79,6 +79,35 @@
   gap: 12px;
 }
 
+.app__show-filters {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid $border;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.03);
+  width: fit-content;
+}
+
+.app__show-filter {
+  border: 0;
+  background: transparent;
+  color: $muted;
+  padding: 8px 18px;
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.app__show-filter + .app__show-filter {
+  border-left: 1px solid $border;
+}
+
+.app__show-filter--active {
+  color: white;
+  background: rgba(255, 255, 255, 0.08);
+}
+
 .app__button {
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: transparent;
