@@ -20,6 +20,7 @@ import {
   createActor,
   createCharacter,
   createShow,
+  createEpisode,
 } from "./services/api.js";
 import "./App.scss";
 
@@ -60,6 +61,7 @@ export default function App() {
   const [characterActorsErr, setCharacterActorsErr] = useState("");
   const [selectedEpisodeShowKey, setSelectedEpisodeShowKey] = useState("all");
   const [isEpisodeModalOpen, setIsEpisodeModalOpen] = useState(false);
+  const [episodeCreateErr, setEpisodeCreateErr] = useState("");
   const [episodeShows, setEpisodeShows] = useState([]);
   const [episodeShowsLoading, setEpisodeShowsLoading] = useState(false);
   const [episodeShowsErr, setEpisodeShowsErr] = useState("");
@@ -200,6 +202,19 @@ export default function App() {
       }
     } catch (ex) {
       setShowCreateErr(ex.message || String(ex));
+      throw ex;
+    }
+  }
+
+  async function handleCreateEpisode(payload) {
+    setEpisodeCreateErr("");
+    try {
+      await createEpisode(payload);
+      if (!isActorsPage && !isCharactersPage && !isShowsPage) {
+        runSearch(null, "episodes");
+      }
+    } catch (ex) {
+      setEpisodeCreateErr(ex.message || String(ex));
       throw ex;
     }
   }
@@ -515,6 +530,7 @@ export default function App() {
           <button className="app__button" type="button" onClick={() => setIsEpisodeModalOpen(true)}>
             Adicionar Episódio
           </button>
+          {episodeCreateErr && <div className="app__error">Erro: {episodeCreateErr}</div>}
         </div>
       )}
 
@@ -620,6 +636,7 @@ export default function App() {
       <AddEpisodeModal
         isOpen={isEpisodeModalOpen}
         onClose={() => setIsEpisodeModalOpen(false)}
+        onSubmit={handleCreateEpisode}
         shows={episodeShows}
         showsLoading={episodeShowsLoading}
         showsError={episodeShowsErr}
