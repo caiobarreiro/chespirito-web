@@ -46,7 +46,7 @@ export default function AddShowModal({ isOpen, onClose, onSubmit }) {
         name: formData.name.trim(),
         nameEs: formData.nameEs.trim(),
         startDate: formData.startDate,
-        endData: formData.endData || "",
+        endDate: formData.endDate || "",
       });
       onClose();
     } catch (ex) {
