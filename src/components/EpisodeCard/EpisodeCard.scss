@@ -30,7 +30,7 @@
 }
 
 .episode-card__subtitle {
-  color: $muted;
+  color: $muted-on-dark;
 }
 
 .episode-card__badges {
@@ -40,10 +40,11 @@
 }
 
 .episode-card__meta {
-  color: $muted;
+  color: $muted-on-dark;
   font-size: 0.9rem;
 }
 
 .episode-card__synopsis {
   white-space: pre-wrap;
+  color: $muted-on-dark;
 }
