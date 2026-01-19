@@ -59,7 +59,7 @@ export async function fetchCharacter({ characterId }) {
     throw new Error("characterId is required");
   }
 
-  const url = new URL(`character/${characterId}`, base);
+  const url = new URL(`characters/${characterId}`, base);
 
   const res = await fetch(url.toString());
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
