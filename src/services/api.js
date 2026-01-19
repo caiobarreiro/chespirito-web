@@ -196,3 +196,20 @@ export async function createEpisode({
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
+
+export async function updateEpisodeCharacters({ episodeId, characters }) {
+  const base = requireApiBase();
+
+  const url = new URL(`episodes/${episodeId}/characters`, base);
+
+  const res = await fetch(url.toString(), {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(characters ?? []),
+  });
+
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
