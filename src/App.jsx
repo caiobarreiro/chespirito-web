@@ -502,7 +502,7 @@ export default function App() {
           )}
 
           {showsItems.map((show, index) => (
-            <ShowCard key={show.id ?? show.name ?? index} show={show} />
+            <ShowCard key={show.id ?? show.name ?? index} show={show} onSelect={setSelectedShow} />
           ))}
         </main>
       ) : (
