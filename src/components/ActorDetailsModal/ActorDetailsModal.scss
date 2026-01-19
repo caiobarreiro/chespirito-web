@@ -1,0 +1,95 @@
+@use "../../styles/variables" as *;
+
+.actor-details-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 10, 14, 0.72);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  z-index: 25;
+}
+
+.actor-details-modal__panel {
+  width: min(640px, 100%);
+  max-height: 80vh;
+  overflow: auto;
+  background: #0f172a;
+  border-radius: $radius;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+}
+
+.actor-details-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.actor-details-modal__title {
+  margin: 0;
+  color: white;
+  font-size: 1.35rem;
+}
+
+.actor-details-modal__close {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: white;
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.actor-details-modal__close:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.actor-details-modal__details {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-radius: $radius;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.actor-details-modal__detail {
+  display: grid;
+  gap: 4px;
+}
+
+.actor-details-modal__label {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.7rem;
+  color: rgba(148, 163, 184, 0.9);
+}
+
+.actor-details-modal__value {
+  color: white;
+  font-weight: 600;
+}
+
+.actor-details-modal__section {
+  display: grid;
+  gap: 8px;
+}
+
+.actor-details-modal__section-title {
+  color: white;
+  font-weight: 600;
+}
+
+.actor-details-modal__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.actor-details-modal__empty {
+  color: $muted-on-dark;
+}

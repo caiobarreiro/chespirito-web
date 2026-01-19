@@ -8,6 +8,7 @@ import CharacterModal from "./components/CharacterModal/CharacterModal.jsx";
 import EpisodeModal from "./components/EpisodeModal/EpisodeModal.jsx";
 import ShowModal from "./components/ShowModal/ShowModal.jsx";
 import ActorModal from "./components/ActorModal/ActorModal.jsx";
+import ActorDetailsModal from "./components/ActorDetailsModal/ActorDetailsModal.jsx";
 import AddCharacterModal from "./components/AddCharacterModal/AddCharacterModal.jsx";
 import AddShowModal from "./components/AddShowModal/AddShowModal.jsx";
 import AddEpisodeModal from "./components/AddEpisodeModal/AddEpisodeModal.jsx";
@@ -44,6 +45,8 @@ export default function App() {
   const [showsLoading, setShowsLoading] = useState(false);
   const [showsErr, setShowsErr] = useState("");
   const [showsItems, setShowsItems] = useState([]);
+  const [selectedActor, setSelectedActor] = useState(null);
+  const [actorModalReturn, setActorModalReturn] = useState(null);
   const [selectedCharacter, setSelectedCharacter] = useState(null);
   const [selectedEpisode, setSelectedEpisode] = useState(null);
   const [episodeModalReturn, setEpisodeModalReturn] = useState(null);
@@ -97,6 +100,8 @@ export default function App() {
     if (to === window.location.pathname) return;
     window.history.pushState({}, "", to);
     setPath(to);
+    setSelectedActor(null);
+    setActorModalReturn(null);
     setSelectedCharacter(null);
     setSelectedShow(null);
   }
@@ -437,6 +442,7 @@ export default function App() {
 
   const handleCharacterSelect = (character) => {
     setEpisodeModalReturn(null);
+    setActorModalReturn(null);
     openCharacterModal(character);
   };
 
@@ -445,6 +451,16 @@ export default function App() {
       setEpisodeModalReturn(selectedEpisode);
       setSelectedEpisode(null);
     }
+    setActorModalReturn(null);
+    openCharacterModal(character);
+  };
+
+  const handleCharacterSelectFromActor = (character) => {
+    if (selectedActor) {
+      setActorModalReturn(selectedActor);
+      setSelectedActor(null);
+    }
+    setEpisodeModalReturn(null);
     openCharacterModal(character);
   };
 
@@ -452,6 +468,7 @@ export default function App() {
     characterFetchIdRef.current += 1;
     setSelectedCharacter(null);
     setEpisodeModalReturn(null);
+    setActorModalReturn(null);
     setCharacterDetailsErr("");
   };
 
@@ -461,6 +478,19 @@ export default function App() {
     setSelectedEpisode(episodeModalReturn);
     setEpisodeModalReturn(null);
   };
+
+  const handleBackToActor = () => {
+    if (!actorModalReturn) return;
+    setSelectedCharacter(null);
+    setSelectedActor(actorModalReturn);
+    setActorModalReturn(null);
+  };
+
+  const characterModalBackHandler = actorModalReturn
+    ? handleBackToActor
+    : episodeModalReturn
+    ? handleBackToEpisode
+    : null;
 
   return (
     <div className="app">
@@ -617,6 +647,7 @@ export default function App() {
               key={actor.id ?? actor.name ?? index}
               actor={actor}
               onSelect={handleCharacterSelect}
+              onOpen={() => setSelectedActor(actor)}
             />
           ))}
         </main>
@@ -668,8 +699,14 @@ export default function App() {
         loading={characterEpisodesLoading}
         error={characterDetailsErr || characterEpisodesErr}
         onClose={handleCloseCharacterModal}
-        onBack={episodeModalReturn ? handleBackToEpisode : null}
+        onBack={characterModalBackHandler}
         onShowSelect={(value) => setSelectedShow(value)}
+      />
+
+      <ActorDetailsModal
+        actor={selectedActor}
+        onClose={() => setSelectedActor(null)}
+        onCharacterSelect={handleCharacterSelectFromActor}
       />
 
       <ShowModal
