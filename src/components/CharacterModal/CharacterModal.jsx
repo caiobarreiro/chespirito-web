@@ -6,6 +6,12 @@ function getCharacterName(character) {
   return character?.name ?? character?.character ?? character?.nickname ?? "Personagem";
 }
 
+function getActorName(actor) {
+  if (!actor) return "";
+  if (typeof actor === "string") return actor;
+  return actor?.name ?? actor?.actor ?? actor?.fullName ?? "";
+}
+
 function getShowName(show) {
   return typeof show === "string" ? show : show?.name ?? show?.namePt ?? "";
 }
@@ -63,6 +69,9 @@ export default function CharacterModal({
           (episode) => getNormalizedShowKey(episode.show) === selectedShowKey,
         )
       : episodes;
+  const actorName = getActorName(
+    character?.actor ?? character?.actorName ?? character?.actorFullName,
+  );
 
   return (
     <div className="character-modal" role="dialog" aria-modal="true" onClick={onClose}>
@@ -74,9 +83,17 @@ export default function CharacterModal({
                 ← Voltar
               </button>
             )}
-            <h2 className="character-modal__title">
-              Episódios com {getCharacterName(character)}
-            </h2>
+            <div className="character-modal__title-block">
+              <h2 className="character-modal__title">
+                Episódios com {getCharacterName(character)}
+              </h2>
+              {actorName && (
+                <div className="character-modal__actor-card">
+                  <span className="character-modal__actor-label">Ator</span>
+                  <span className="character-modal__actor-name">{actorName}</span>
+                </div>
+              )}
+            </div>
           </div>
           <button className="character-modal__close" type="button" onClick={onClose}>
             Fechar

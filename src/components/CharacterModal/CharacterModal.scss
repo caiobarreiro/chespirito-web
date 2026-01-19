@@ -36,10 +36,41 @@
   flex-wrap: wrap;
 }
 
+.character-modal__title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .character-modal__title {
   margin: 0;
   color: white;
   font-size: 1.25rem;
+}
+
+.character-modal__actor-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.7);
+  color: $muted-on-dark;
+  font-size: 0.85rem;
+  width: fit-content;
+}
+
+.character-modal__actor-label {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.7rem;
+  color: rgba(148, 163, 184, 0.9);
+}
+
+.character-modal__actor-name {
+  color: white;
+  font-weight: 600;
 }
 
 .character-modal__back {
