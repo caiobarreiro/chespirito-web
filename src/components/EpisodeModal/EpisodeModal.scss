@@ -1,0 +1,123 @@
+.episode-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(6, 13, 28, 0.72);
+}
+
+.episode-modal__panel {
+  width: min(720px, 100%);
+  background: #0f1a2c;
+  color: #f7f8fc;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+}
+
+.episode-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.episode-modal__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.episode-modal__subtitle {
+  margin-top: 4px;
+  font-size: 14px;
+  color: rgba(247, 248, 252, 0.72);
+}
+
+.episode-modal__close {
+  border: 0;
+  background: rgba(247, 248, 252, 0.1);
+  color: #f7f8fc;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.episode-modal__close:hover {
+  background: rgba(247, 248, 252, 0.2);
+}
+
+.episode-modal__meta {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(247, 248, 252, 0.7);
+}
+
+.episode-modal__characters {
+  margin-top: 20px;
+  display: grid;
+  gap: 8px;
+}
+
+.episode-modal__label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(247, 248, 252, 0.7);
+}
+
+.episode-modal__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.episode-modal__synopsis {
+  margin-top: 20px;
+  display: grid;
+  gap: 12px;
+}
+
+.episode-modal__synopsis-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.episode-modal__toggle {
+  display: inline-flex;
+  background: rgba(247, 248, 252, 0.08);
+  border-radius: 999px;
+  padding: 2px;
+  gap: 4px;
+}
+
+.episode-modal__toggle-button {
+  border: 0;
+  background: transparent;
+  color: rgba(247, 248, 252, 0.7);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.episode-modal__toggle-button--active {
+  background: rgba(247, 248, 252, 0.2);
+  color: #f7f8fc;
+}
+
+.episode-modal__synopsis-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(247, 248, 252, 0.86);
+}

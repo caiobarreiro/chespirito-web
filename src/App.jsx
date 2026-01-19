@@ -5,6 +5,7 @@ import ActorCard from "./components/ActorCard/ActorCard.jsx";
 import CharacterCard from "./components/CharacterCard/CharacterCard.jsx";
 import ShowCard from "./components/ShowCard/ShowCard.jsx";
 import CharacterModal from "./components/CharacterModal/CharacterModal.jsx";
+import EpisodeModal from "./components/EpisodeModal/EpisodeModal.jsx";
 import ShowModal from "./components/ShowModal/ShowModal.jsx";
 import ActorModal from "./components/ActorModal/ActorModal.jsx";
 import AddCharacterModal from "./components/AddCharacterModal/AddCharacterModal.jsx";
@@ -43,6 +44,7 @@ export default function App() {
   const [showsErr, setShowsErr] = useState("");
   const [showsItems, setShowsItems] = useState([]);
   const [selectedCharacter, setSelectedCharacter] = useState(null);
+  const [selectedEpisode, setSelectedEpisode] = useState(null);
   const [characterEpisodes, setCharacterEpisodes] = useState([]);
   const [characterEpisodesLoading, setCharacterEpisodesLoading] = useState(false);
   const [characterEpisodesErr, setCharacterEpisodesErr] = useState("");
@@ -598,6 +600,7 @@ export default function App() {
               key={ep.id}
               episode={ep}
               onSelect={(value) => setSelectedCharacter(value)}
+              onEpisodeSelect={(value) => setSelectedEpisode(value)}
               onShowSelect={(value) => setSelectedShow(value)}
             />
           ))}
@@ -620,6 +623,8 @@ export default function App() {
         error={showEpisodesErr}
         onClose={() => setSelectedShow(null)}
       />
+
+      <EpisodeModal episode={selectedEpisode} onClose={() => setSelectedEpisode(null)} />
 
       <ActorModal
         isOpen={isActorModalOpen}

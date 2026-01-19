@@ -9,6 +9,16 @@
   gap: 10px;
 }
 
+.episode-card--clickable {
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.episode-card--clickable:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+}
+
 .episode-card__header {
   display: flex;
   gap: 10px;

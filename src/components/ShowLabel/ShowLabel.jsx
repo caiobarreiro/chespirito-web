@@ -20,7 +20,10 @@ export default function ShowLabel({ show, onSelect }) {
       className="show-label show-label--button"
       type="button"
       title={title}
-      onClick={() => onSelect(show)}
+      onClick={(event) => {
+        event.stopPropagation();
+        onSelect(show);
+      }}
     >
       {label}
     </button>
