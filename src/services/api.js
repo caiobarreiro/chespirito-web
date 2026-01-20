@@ -238,6 +238,32 @@ export async function updateActor({ id, name, fullName, dob, dod }) {
   return res.json();
 }
 
+export async function updateCharacter({ id, name, originalName, actor }) {
+  const base = requireApiBase();
+
+  if (!id) {
+    throw new Error("id is required");
+  }
+
+  const url = new URL(`characters/${id}`, base);
+
+  const res = await fetch(url.toString(), {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      id,
+      name,
+      originalName,
+      actor,
+    }),
+  });
+
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
 export async function updateActorCharacters({ actorId, characters }) {
   const base = requireApiBase();
 

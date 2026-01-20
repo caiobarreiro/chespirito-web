@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Badge from "../Badge/Badge.jsx";
-import { fetchCharacters, updateActor, updateActorCharacters } from "../../services/api.js";
+import { fetchCharacters, updateActor, updateCharacter } from "../../services/api.js";
 import "./ActorDetailsModal.scss";
 
 function getActorName(actor) {
@@ -27,6 +27,18 @@ function getCharacterKey(character) {
   return String(
     character?.id ?? character?.uuid ?? character?.name ?? character?.character ?? (typeof character === "string" ? character : ""),
   );
+}
+
+function getCharacterId(character) {
+  return character?.id ?? character?.uuid ?? null;
+}
+
+function getCharacterName(character) {
+  return character?.name ?? character?.namePt ?? character?.character ?? "";
+}
+
+function getCharacterOriginalName(character) {
+  return character?.originalName ?? character?.nameEs ?? character?.nameES ?? "";
 }
 
 function getCharacterKeys(characters) {
@@ -205,16 +217,50 @@ export default function ActorDetailsModal({ actor, onClose, onCharacterSelect, o
       let updatedActor = updated?.actor ?? updated;
       const charactersChanged = !areCharactersEqual(selectedCharacters, initialCharactersRef.current);
       if (charactersChanged) {
-        const updatedCharacters = await updateActorCharacters({
-          actorId,
-          characters: selectedCharacters,
-        });
-        const updatedCharactersActor = updatedCharacters?.actor ?? updatedCharacters;
-        if (updatedCharactersActor && typeof updatedCharactersActor === "object") {
-          updatedActor = { ...updatedActor, ...updatedCharactersActor };
-        } else {
-          updatedActor = { ...updatedActor, characters: selectedCharacters };
+        const actorPayload = {
+          id: updatedActor?.id ?? actorId,
+          name: updatedActor?.name ?? formData.name,
+          fullName: updatedActor?.fullName ?? formData.fullName,
+          dob: updatedActor?.dob ?? formData.dob,
+          dod: updatedActor?.dod ?? formData.dod,
+        };
+        const currentCharacters = Array.isArray(selectedCharacters) ? selectedCharacters : [];
+        const initialCharacters = Array.isArray(initialCharactersRef.current)
+          ? initialCharactersRef.current
+          : [];
+        const currentIds = new Set(currentCharacters.map((character) => getCharacterId(character)).filter(Boolean));
+        const removedCharacters = initialCharacters.filter(
+          (character) => {
+            const characterId = getCharacterId(character);
+            return characterId && !currentIds.has(characterId);
+          },
+        );
+        const updateRequests = [
+          ...currentCharacters.map((character) => {
+            const characterId = getCharacterId(character);
+            if (!characterId) return null;
+            return updateCharacter({
+              id: characterId,
+              name: getCharacterName(character),
+              originalName: getCharacterOriginalName(character),
+              actor: actorPayload,
+            });
+          }),
+          ...removedCharacters.map((character) => {
+            const characterId = getCharacterId(character);
+            if (!characterId) return null;
+            return updateCharacter({
+              id: characterId,
+              name: getCharacterName(character),
+              originalName: getCharacterOriginalName(character),
+              actor: null,
+            });
+          }),
+        ].filter(Boolean);
+        if (updateRequests.length > 0) {
+          await Promise.all(updateRequests);
         }
+        updatedActor = { ...updatedActor, characters: selectedCharacters };
       }
       setCurrentActor(updatedActor);
       if (onActorUpdated) {
