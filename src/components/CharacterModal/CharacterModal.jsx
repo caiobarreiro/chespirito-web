@@ -28,6 +28,7 @@ export default function CharacterModal({
   onClose,
   onBack,
   onShowSelect,
+  onEdit,
 }) {
   if (!character) return null;
 
@@ -95,9 +96,16 @@ export default function CharacterModal({
               )}
             </div>
           </div>
-          <button className="character-modal__close" type="button" onClick={onClose}>
-            Fechar
-          </button>
+          <div className="character-modal__actions">
+            {onEdit && (
+              <button className="character-modal__edit" type="button" onClick={() => onEdit(character)}>
+                Editar
+              </button>
+            )}
+            <button className="character-modal__close" type="button" onClick={onClose}>
+              Fechar
+            </button>
+          </div>
         </div>
 
         {loading && <div className="character-modal__status">Carregando episódios…</div>}

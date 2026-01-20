@@ -10,6 +10,7 @@ import ShowModal from "./components/ShowModal/ShowModal.jsx";
 import ActorModal from "./components/ActorModal/ActorModal.jsx";
 import ActorDetailsModal from "./components/ActorDetailsModal/ActorDetailsModal.jsx";
 import AddCharacterModal from "./components/AddCharacterModal/AddCharacterModal.jsx";
+import EditCharacterModal from "./components/EditCharacterModal/EditCharacterModal.jsx";
 import AddShowModal from "./components/AddShowModal/AddShowModal.jsx";
 import AddEpisodeModal from "./components/AddEpisodeModal/AddEpisodeModal.jsx";
 import {
@@ -24,6 +25,7 @@ import {
   createCharacter,
   createShow,
   createEpisode,
+  updateCharacter,
   updateEpisodeCharacters,
 } from "./services/api.js";
 import "./App.scss";
@@ -64,6 +66,7 @@ export default function App() {
   const [actorCreateErr, setActorCreateErr] = useState("");
   const [isCharacterModalOpen, setIsCharacterModalOpen] = useState(false);
   const [characterCreateErr, setCharacterCreateErr] = useState("");
+  const [isEditCharacterModalOpen, setIsEditCharacterModalOpen] = useState(false);
   const [isShowModalOpen, setIsShowModalOpen] = useState(false);
   const [showCreateErr, setShowCreateErr] = useState("");
   const [characterActors, setCharacterActors] = useState([]);
@@ -205,6 +208,30 @@ export default function App() {
     }
   }
 
+  async function handleUpdateCharacter(payload) {
+    const updated = await updateCharacter(payload);
+    const updatedCharacter = updated?.character ?? updated;
+    const updatedId = updatedCharacter?.id ?? updatedCharacter?.uuid;
+
+    setCharactersItems((prev) =>
+      prev.map((character) => {
+        const characterId = character?.id ?? character?.uuid;
+        if (characterId && updatedId && characterId === updatedId) {
+          return { ...character, ...updatedCharacter };
+        }
+        return character;
+      }),
+    );
+
+    setSelectedCharacter((prev) => {
+      const prevId = prev?.id ?? prev?.uuid;
+      if (prevId && updatedId && prevId === updatedId) {
+        return { ...prev, ...updatedCharacter };
+      }
+      return prev;
+    });
+  }
+
   async function handleCreateShow(payload) {
     setShowCreateErr("");
     try {
@@ -240,7 +267,7 @@ export default function App() {
   }
 
   useEffect(() => {
-    if (!isCharacterModalOpen) return;
+    if (!isCharacterModalOpen && !isEditCharacterModalOpen) return;
     let isActive = true;
     setCharacterActorsLoading(true);
     setCharacterActorsErr("");
@@ -261,7 +288,7 @@ export default function App() {
     return () => {
       isActive = false;
     };
-  }, [isCharacterModalOpen]);
+  }, [isCharacterModalOpen, isEditCharacterModalOpen]);
 
   useEffect(() => {
     if (!isEpisodeModalOpen) return;
@@ -443,6 +470,7 @@ export default function App() {
   const handleCharacterSelect = (character) => {
     setEpisodeModalReturn(null);
     setActorModalReturn(null);
+    setIsEditCharacterModalOpen(false);
     openCharacterModal(character);
   };
 
@@ -452,6 +480,7 @@ export default function App() {
       setSelectedEpisode(null);
     }
     setActorModalReturn(null);
+    setIsEditCharacterModalOpen(false);
     openCharacterModal(character);
   };
 
@@ -461,6 +490,7 @@ export default function App() {
       setSelectedActor(null);
     }
     setEpisodeModalReturn(null);
+    setIsEditCharacterModalOpen(false);
     openCharacterModal(character);
   };
 
@@ -485,6 +515,7 @@ export default function App() {
     setEpisodeModalReturn(null);
     setActorModalReturn(null);
     setCharacterDetailsErr("");
+    setIsEditCharacterModalOpen(false);
   };
 
   const handleBackToEpisode = () => {
@@ -492,6 +523,7 @@ export default function App() {
     setSelectedCharacter(null);
     setSelectedEpisode(episodeModalReturn);
     setEpisodeModalReturn(null);
+    setIsEditCharacterModalOpen(false);
   };
 
   const handleBackToActor = () => {
@@ -499,6 +531,7 @@ export default function App() {
     setSelectedCharacter(null);
     setSelectedActor(actorModalReturn);
     setActorModalReturn(null);
+    setIsEditCharacterModalOpen(false);
   };
 
   const characterModalBackHandler = actorModalReturn
@@ -716,6 +749,7 @@ export default function App() {
         onClose={handleCloseCharacterModal}
         onBack={characterModalBackHandler}
         onShowSelect={(value) => setSelectedShow(value)}
+        onEdit={() => setIsEditCharacterModalOpen(true)}
       />
 
       <ActorDetailsModal
@@ -749,6 +783,16 @@ export default function App() {
         isOpen={isCharacterModalOpen}
         onClose={() => setIsCharacterModalOpen(false)}
         onSubmit={handleCreateCharacter}
+        actors={characterActors}
+        actorsLoading={characterActorsLoading}
+        actorsError={characterActorsErr}
+      />
+
+      <EditCharacterModal
+        isOpen={isEditCharacterModalOpen}
+        character={selectedCharacter}
+        onClose={() => setIsEditCharacterModalOpen(false)}
+        onSubmit={handleUpdateCharacter}
         actors={characterActors}
         actorsLoading={characterActorsLoading}
         actorsError={characterActorsErr}
