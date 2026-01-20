@@ -211,7 +211,7 @@ export async function createEpisode({
   return res.json();
 }
 
-export async function updateActor({ id, name, fullName, dob, dod, characters }) {
+export async function updateActor({ id, name, fullName, dob, dod }) {
   const base = requireApiBase();
 
   if (!id) {
@@ -231,8 +231,28 @@ export async function updateActor({ id, name, fullName, dob, dod, characters }) 
       fullName,
       dob,
       dod,
-      characters,
     }),
+  });
+
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+export async function updateActorCharacters({ actorId, characters }) {
+  const base = requireApiBase();
+
+  if (!actorId) {
+    throw new Error("actorId is required");
+  }
+
+  const url = new URL(`actors/${actorId}/characters`, base);
+
+  const res = await fetch(url.toString(), {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(characters ?? []),
   });
 
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
