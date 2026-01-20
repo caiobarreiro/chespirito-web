@@ -98,8 +98,13 @@ export default function CharacterModal({
           </div>
           <div className="character-modal__actions">
             {onEdit && (
-              <button className="character-modal__edit" type="button" onClick={() => onEdit(character)}>
-                Editar
+              <button
+                className="character-modal__edit"
+                type="button"
+                aria-label="Editar"
+                onClick={() => onEdit(character)}
+              >
+                ✏️
               </button>
             )}
             <button className="character-modal__close" type="button" onClick={onClose}>
