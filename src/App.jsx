@@ -464,6 +464,21 @@ export default function App() {
     openCharacterModal(character);
   };
 
+  const handleActorUpdated = (updatedActor) => {
+    if (!updatedActor) return;
+    setSelectedActor(updatedActor);
+    setActorsItems((prev) =>
+      prev.map((actor) => {
+        const actorId = actor?.id ?? actor?.uuid;
+        const updatedId = updatedActor?.id ?? updatedActor?.uuid;
+        if (actorId && updatedId && actorId === updatedId) {
+          return { ...actor, ...updatedActor };
+        }
+        return actor;
+      })
+    );
+  };
+
   const handleCloseCharacterModal = () => {
     characterFetchIdRef.current += 1;
     setSelectedCharacter(null);
@@ -707,6 +722,7 @@ export default function App() {
         actor={selectedActor}
         onClose={() => setSelectedActor(null)}
         onCharacterSelect={handleCharacterSelectFromActor}
+        onActorUpdated={handleActorUpdated}
       />
 
       <ShowModal
