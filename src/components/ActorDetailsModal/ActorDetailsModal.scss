@@ -85,6 +85,11 @@
   background: rgba(15, 23, 42, 0.6);
 }
 
+.actor-details-modal__form {
+  display: grid;
+  gap: 16px;
+}
+
 .actor-details-modal__detail {
   display: grid;
   gap: 4px;

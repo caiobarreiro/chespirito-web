@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Badge from "../Badge/Badge.jsx";
-import { fetchCharacters, updateActor } from "../../services/api.js";
+import { fetchCharacters, updateActor, updateActorCharacters } from "../../services/api.js";
 import "./ActorDetailsModal.scss";
 
 function getActorName(actor) {
@@ -29,6 +29,20 @@ function getCharacterKey(character) {
   );
 }
 
+function getCharacterKeys(characters) {
+  return (Array.isArray(characters) ? characters : [])
+    .map((character) => getCharacterKey(character))
+    .filter(Boolean)
+    .sort();
+}
+
+function areCharactersEqual(current, initial) {
+  const currentKeys = getCharacterKeys(current);
+  const initialKeys = getCharacterKeys(initial);
+  if (currentKeys.length !== initialKeys.length) return false;
+  return currentKeys.every((key, index) => key === initialKeys[index]);
+}
+
 export default function ActorDetailsModal({ actor, onClose, onCharacterSelect, onActorUpdated }) {
   if (!actor) return null;
 
@@ -47,6 +61,7 @@ export default function ActorDetailsModal({ actor, onClose, onCharacterSelect, o
   const [charactersLoading, setCharactersLoading] = useState(false);
   const [charactersError, setCharactersError] = useState("");
   const [selectedCharacters, setSelectedCharacters] = useState([]);
+  const initialCharactersRef = useRef([]);
 
   useEffect(() => {
     function handleKeyDown(event) {
@@ -74,6 +89,7 @@ export default function ActorDetailsModal({ actor, onClose, onCharacterSelect, o
     setSelectedCharacters(
       nextRoles.map((role) => (typeof role === "string" ? { name: role } : role)).filter(Boolean),
     );
+    initialCharactersRef.current = nextRoles;
     setIsEditing(false);
     setError("");
   }, [actor]);
@@ -164,6 +180,15 @@ export default function ActorDetailsModal({ actor, onClose, onCharacterSelect, o
     setError("");
   };
 
+  const handleEditClick = () => {
+    if (isEditing) {
+      handleCancel();
+      return;
+    }
+    initialCharactersRef.current = selectedCharacters;
+    setIsEditing(true);
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!actorId) return;
@@ -176,9 +201,21 @@ export default function ActorDetailsModal({ actor, onClose, onCharacterSelect, o
         fullName: formData.fullName,
         dob: formData.dob,
         dod: formData.dod,
-        characters: selectedCharacters,
       });
-      const updatedActor = updated?.actor ?? updated;
+      let updatedActor = updated?.actor ?? updated;
+      const charactersChanged = !areCharactersEqual(selectedCharacters, initialCharactersRef.current);
+      if (charactersChanged) {
+        const updatedCharacters = await updateActorCharacters({
+          actorId,
+          characters: selectedCharacters,
+        });
+        const updatedCharactersActor = updatedCharacters?.actor ?? updatedCharacters;
+        if (updatedCharactersActor && typeof updatedCharactersActor === "object") {
+          updatedActor = { ...updatedActor, ...updatedCharactersActor };
+        } else {
+          updatedActor = { ...updatedActor, characters: selectedCharacters };
+        }
+      }
       setCurrentActor(updatedActor);
       if (onActorUpdated) {
         onActorUpdated(updatedActor);
@@ -197,6 +234,7 @@ export default function ActorDetailsModal({ actor, onClose, onCharacterSelect, o
           ? updatedActor.roles
           : selectedCharacters,
       );
+      initialCharactersRef.current = selectedCharacters;
       setIsEditing(false);
     } catch (err) {
       setError(err?.message ?? "Erro ao atualizar ator");
@@ -215,7 +253,7 @@ export default function ActorDetailsModal({ actor, onClose, onCharacterSelect, o
               <button
                 className="actor-details-modal__icon-button"
                 type="button"
-                onClick={() => setIsEditing((prev) => !prev)}
+                onClick={handleEditClick}
                 aria-label={isEditing ? "Cancelar edição" : "Editar ator"}
               >
                 <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -233,62 +271,119 @@ export default function ActorDetailsModal({ actor, onClose, onCharacterSelect, o
           </div>
         </div>
 
-        <form className="actor-details-modal__details" onSubmit={handleSubmit}>
-          <div className="actor-details-modal__detail">
-            <span className="actor-details-modal__label">Nome</span>
-            {isEditing ? (
-              <input
-                className="actor-details-modal__input"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-              />
+        <form className="actor-details-modal__form" onSubmit={handleSubmit}>
+          <div className="actor-details-modal__details">
+            <div className="actor-details-modal__detail">
+              <span className="actor-details-modal__label">Nome</span>
+              {isEditing ? (
+                <input
+                  className="actor-details-modal__input"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                />
+              ) : (
+                <span className="actor-details-modal__value">{currentActor?.name ?? "Não informado"}</span>
+              )}
+            </div>
+            <div className="actor-details-modal__detail">
+              <span className="actor-details-modal__label">Nome completo</span>
+              {isEditing ? (
+                <input
+                  className="actor-details-modal__input"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                />
+              ) : (
+                <span className="actor-details-modal__value">{formattedValues.fullName}</span>
+              )}
+            </div>
+            <div className="actor-details-modal__detail">
+              <span className="actor-details-modal__label">Data de nascimento</span>
+              {isEditing ? (
+                <input
+                  className="actor-details-modal__input"
+                  name="dob"
+                  type="date"
+                  value={formData.dob}
+                  onChange={handleChange}
+                />
+              ) : (
+                <span className="actor-details-modal__value">{formattedValues.dob}</span>
+              )}
+            </div>
+            <div className="actor-details-modal__detail">
+              <span className="actor-details-modal__label">Data de falecimento</span>
+              {isEditing ? (
+                <input
+                  className="actor-details-modal__input"
+                  name="dod"
+                  type="date"
+                  value={formData.dod}
+                  onChange={handleChange}
+                />
+              ) : (
+                <span className="actor-details-modal__value">{formattedValues.dod}</span>
+              )}
+            </div>
+            {error && <div className="actor-details-modal__error">Erro: {error}</div>}
+          </div>
+
+          <div className="actor-details-modal__section">
+            <div className="actor-details-modal__section-title">Personagens</div>
+            {isEditing && (
+              <label className="actor-details-modal__field">
+                <span className="actor-details-modal__label">Adicionar personagem</span>
+                <select
+                  className="actor-details-modal__input"
+                  name="characterId"
+                  value={formData.characterId}
+                  onChange={handleCharacterSelect}
+                >
+                  <option value="" disabled>
+                    {charactersLoading ? "Carregando personagens..." : "Selecione um personagem"}
+                  </option>
+                  {characterOptions.map((character, index) => {
+                    const key = getCharacterKey(character) || String(index);
+                    return (
+                      <option key={key} value={key} disabled={selectedCharacterKeys.has(key)}>
+                        {getCharacterLabel(character)}
+                      </option>
+                    );
+                  })}
+                </select>
+              </label>
+            )}
+            {charactersError && <div className="actor-details-modal__error">Erro: {charactersError}</div>}
+            {(isEditing ? selectedCharacters : roles).length === 0 ? (
+              <div className="actor-details-modal__empty">Nenhum personagem cadastrado.</div>
             ) : (
-              <span className="actor-details-modal__value">{currentActor?.name ?? "Não informado"}</span>
+              <div className="actor-details-modal__badges">
+                {(isEditing ? selectedCharacters : roles).map((role) => {
+                  const name = getCharacterLabel(role);
+                  if (!name) return null;
+                  const key = getCharacterKey(role);
+                  return (
+                    <Badge
+                      key={key || name}
+                      title={isEditing ? "Remover personagem" : name}
+                      onClick={
+                        isEditing
+                          ? () => handleRemoveCharacter(key)
+                          : onCharacterSelect
+                          ? () => onCharacterSelect(typeof role === "string" ? { name } : role)
+                          : undefined
+                      }
+                    >
+                      {name} {isEditing && "×"}
+                    </Badge>
+                  );
+                })}
+              </div>
             )}
           </div>
-          <div className="actor-details-modal__detail">
-            <span className="actor-details-modal__label">Nome completo</span>
-            {isEditing ? (
-              <input
-                className="actor-details-modal__input"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-              />
-            ) : (
-              <span className="actor-details-modal__value">{formattedValues.fullName}</span>
-            )}
-          </div>
-          <div className="actor-details-modal__detail">
-            <span className="actor-details-modal__label">Data de nascimento</span>
-            {isEditing ? (
-              <input
-                className="actor-details-modal__input"
-                name="dob"
-                type="date"
-                value={formData.dob}
-                onChange={handleChange}
-              />
-            ) : (
-              <span className="actor-details-modal__value">{formattedValues.dob}</span>
-            )}
-          </div>
-          <div className="actor-details-modal__detail">
-            <span className="actor-details-modal__label">Data de falecimento</span>
-            {isEditing ? (
-              <input
-                className="actor-details-modal__input"
-                name="dod"
-                type="date"
-                value={formData.dod}
-                onChange={handleChange}
-              />
-            ) : (
-              <span className="actor-details-modal__value">{formattedValues.dod}</span>
-            )}
-          </div>
-          {error && <div className="actor-details-modal__error">Erro: {error}</div>}
+
           {isEditing && (
             <div className="actor-details-modal__edit-actions">
               <button
@@ -299,66 +394,16 @@ export default function ActorDetailsModal({ actor, onClose, onCharacterSelect, o
               >
                 Cancelar
               </button>
-              <button className="actor-details-modal__button actor-details-modal__button--primary" type="submit" disabled={saving}>
+              <button
+                className="actor-details-modal__button actor-details-modal__button--primary"
+                type="submit"
+                disabled={saving}
+              >
                 {saving ? "Salvando..." : "Salvar"}
               </button>
             </div>
           )}
         </form>
-
-        <div className="actor-details-modal__section">
-          <div className="actor-details-modal__section-title">Personagens</div>
-          {isEditing && (
-            <label className="actor-details-modal__field">
-              <span className="actor-details-modal__label">Adicionar personagem</span>
-              <select
-                className="actor-details-modal__input"
-                name="characterId"
-                value={formData.characterId}
-                onChange={handleCharacterSelect}
-              >
-                <option value="" disabled>
-                  {charactersLoading ? "Carregando personagens..." : "Selecione um personagem"}
-                </option>
-                {characterOptions.map((character, index) => {
-                  const key = getCharacterKey(character) || String(index);
-                  return (
-                    <option key={key} value={key} disabled={selectedCharacterKeys.has(key)}>
-                      {getCharacterLabel(character)}
-                    </option>
-                  );
-                })}
-              </select>
-            </label>
-          )}
-          {charactersError && <div className="actor-details-modal__error">Erro: {charactersError}</div>}
-          {(isEditing ? selectedCharacters : roles).length === 0 ? (
-            <div className="actor-details-modal__empty">Nenhum personagem cadastrado.</div>
-          ) : (
-            <div className="actor-details-modal__badges">
-              {(isEditing ? selectedCharacters : roles).map((role) => {
-                const name = getCharacterLabel(role);
-                if (!name) return null;
-                const key = getCharacterKey(role);
-                return (
-                  <Badge
-                    key={key || name}
-                    title={isEditing ? "Remover personagem" : name}
-                    onClick={
-                      isEditing
-                        ? () => handleRemoveCharacter(key)
-                        : onCharacterSelect
-                        ? () => onCharacterSelect(typeof role === "string" ? { name } : role)
-                        : undefined
-                    }
-                  >
-                    {name} {isEditing && "×"}
-                  </Badge>
-                );
-              })}
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );
