@@ -211,7 +211,7 @@ export async function createEpisode({
   return res.json();
 }
 
-export async function updateActor({ id, name, fullName, dob, dod }) {
+export async function updateActor({ id, name, fullName, dob, dod, characters }) {
   const base = requireApiBase();
 
   if (!id) {
@@ -231,6 +231,7 @@ export async function updateActor({ id, name, fullName, dob, dod }) {
       fullName,
       dob,
       dod,
+      characters,
     }),
   });
 
