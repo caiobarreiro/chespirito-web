@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Badge from "../Badge/Badge.jsx";
-import { fetchCharacters, updateActor, updateCharacter } from "../../services/api.js";
+import { updateActor } from "../../services/api.js";
 import "./ActorDetailsModal.scss";
 
 function getActorName(actor) {
@@ -29,32 +29,6 @@ function getCharacterKey(character) {
   );
 }
 
-function getCharacterId(character) {
-  return character?.id ?? character?.uuid ?? null;
-}
-
-function getCharacterName(character) {
-  return character?.name ?? character?.namePt ?? character?.character ?? "";
-}
-
-function getCharacterOriginalName(character) {
-  return character?.originalName ?? character?.nameEs ?? character?.nameES ?? "";
-}
-
-function getCharacterKeys(characters) {
-  return (Array.isArray(characters) ? characters : [])
-    .map((character) => getCharacterKey(character))
-    .filter(Boolean)
-    .sort();
-}
-
-function areCharactersEqual(current, initial) {
-  const currentKeys = getCharacterKeys(current);
-  const initialKeys = getCharacterKeys(initial);
-  if (currentKeys.length !== initialKeys.length) return false;
-  return currentKeys.every((key, index) => key === initialKeys[index]);
-}
-
 export default function ActorDetailsModal({ actor, onClose, onCharacterSelect, onActorUpdated }) {
   if (!actor) return null;
 
@@ -65,15 +39,9 @@ export default function ActorDetailsModal({ actor, onClose, onCharacterSelect, o
     fullName: "",
     dob: "",
     dod: "",
-    characterId: "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [characterOptions, setCharacterOptions] = useState([]);
-  const [charactersLoading, setCharactersLoading] = useState(false);
-  const [charactersError, setCharactersError] = useState("");
-  const [selectedCharacters, setSelectedCharacters] = useState([]);
-  const initialCharactersRef = useRef([]);
 
   useEffect(() => {
     function handleKeyDown(event) {
@@ -86,22 +54,12 @@ export default function ActorDetailsModal({ actor, onClose, onCharacterSelect, o
   useEffect(() => {
     if (!actor) return;
     setCurrentActor(actor);
-    const nextRoles = Array.isArray(actor?.characters)
-      ? actor.characters
-      : Array.isArray(actor?.roles)
-      ? actor.roles
-      : [];
     setFormData({
       name: actor?.name ?? "",
       fullName: actor?.fullName ?? "",
       dob: actor?.dob ?? "",
       dod: actor?.dod ?? "",
-      characterId: "",
     });
-    setSelectedCharacters(
-      nextRoles.map((role) => (typeof role === "string" ? { name: role } : role)).filter(Boolean),
-    );
-    initialCharactersRef.current = nextRoles;
     setIsEditing(false);
     setError("");
   }, [actor]);
@@ -124,57 +82,9 @@ export default function ActorDetailsModal({ actor, onClose, onCharacterSelect, o
     [currentActor]
   );
 
-  const selectedCharacterKeys = useMemo(
-    () => new Set(selectedCharacters.map((character) => getCharacterKey(character))),
-    [selectedCharacters],
-  );
-
-  useEffect(() => {
-    let isActive = true;
-
-    async function loadCharacters() {
-      setCharactersLoading(true);
-      setCharactersError("");
-      try {
-        const data = await fetchCharacters({ q: "" });
-        if (!isActive) return;
-        setCharacterOptions(Array.isArray(data) ? data : []);
-      } catch (err) {
-        if (!isActive) return;
-        setCharactersError(err?.message ?? "Erro ao carregar personagens");
-      } finally {
-        if (isActive) setCharactersLoading(false);
-      }
-    }
-
-    if (isEditing) {
-      loadCharacters();
-    }
-
-    return () => {
-      isActive = false;
-    };
-  }, [isEditing]);
-
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleCharacterSelect = (event) => {
-    const { value } = event.target;
-    if (!value) return;
-    const selected = characterOptions.find((character) => getCharacterKey(character) === value);
-    if (!selected) return;
-    setSelectedCharacters((prev) => {
-      if (prev.some((character) => getCharacterKey(character) === value)) return prev;
-      return [...prev, selected];
-    });
-    setFormData((prev) => ({ ...prev, characterId: "" }));
-  };
-
-  const handleRemoveCharacter = (key) => {
-    setSelectedCharacters((prev) => prev.filter((character) => getCharacterKey(character) !== key));
   };
 
   const handleCancel = () => {
@@ -183,11 +93,7 @@ export default function ActorDetailsModal({ actor, onClose, onCharacterSelect, o
       fullName: currentActor?.fullName ?? "",
       dob: currentActor?.dob ?? "",
       dod: currentActor?.dod ?? "",
-      characterId: "",
     });
-    setSelectedCharacters(
-      roles.map((role) => (typeof role === "string" ? { name: role } : role)).filter(Boolean),
-    );
     setIsEditing(false);
     setError("");
   };
@@ -197,7 +103,6 @@ export default function ActorDetailsModal({ actor, onClose, onCharacterSelect, o
       handleCancel();
       return;
     }
-    initialCharactersRef.current = selectedCharacters;
     setIsEditing(true);
   };
 
@@ -214,54 +119,7 @@ export default function ActorDetailsModal({ actor, onClose, onCharacterSelect, o
         dob: formData.dob,
         dod: formData.dod,
       });
-      let updatedActor = updated?.actor ?? updated;
-      const charactersChanged = !areCharactersEqual(selectedCharacters, initialCharactersRef.current);
-      if (charactersChanged) {
-        const actorPayload = {
-          id: updatedActor?.id ?? actorId,
-          name: updatedActor?.name ?? formData.name,
-          fullName: updatedActor?.fullName ?? formData.fullName,
-          dob: updatedActor?.dob ?? formData.dob,
-          dod: updatedActor?.dod ?? formData.dod,
-        };
-        const currentCharacters = Array.isArray(selectedCharacters) ? selectedCharacters : [];
-        const initialCharacters = Array.isArray(initialCharactersRef.current)
-          ? initialCharactersRef.current
-          : [];
-        const currentIds = new Set(currentCharacters.map((character) => getCharacterId(character)).filter(Boolean));
-        const removedCharacters = initialCharacters.filter(
-          (character) => {
-            const characterId = getCharacterId(character);
-            return characterId && !currentIds.has(characterId);
-          },
-        );
-        const updateRequests = [
-          ...currentCharacters.map((character) => {
-            const characterId = getCharacterId(character);
-            if (!characterId) return null;
-            return updateCharacter({
-              id: characterId,
-              name: getCharacterName(character),
-              originalName: getCharacterOriginalName(character),
-              actor: actorPayload,
-            });
-          }),
-          ...removedCharacters.map((character) => {
-            const characterId = getCharacterId(character);
-            if (!characterId) return null;
-            return updateCharacter({
-              id: characterId,
-              name: getCharacterName(character),
-              originalName: getCharacterOriginalName(character),
-              actor: null,
-            });
-          }),
-        ].filter(Boolean);
-        if (updateRequests.length > 0) {
-          await Promise.all(updateRequests);
-        }
-        updatedActor = { ...updatedActor, characters: selectedCharacters };
-      }
+      const updatedActor = updated?.actor ?? updated;
       setCurrentActor(updatedActor);
       if (onActorUpdated) {
         onActorUpdated(updatedActor);
@@ -271,16 +129,7 @@ export default function ActorDetailsModal({ actor, onClose, onCharacterSelect, o
         fullName: updatedActor?.fullName ?? formData.fullName,
         dob: updatedActor?.dob ?? formData.dob,
         dod: updatedActor?.dod ?? formData.dod,
-        characterId: "",
       });
-      setSelectedCharacters(
-        Array.isArray(updatedActor?.characters)
-          ? updatedActor.characters
-          : Array.isArray(updatedActor?.roles)
-          ? updatedActor.roles
-          : selectedCharacters,
-      );
-      initialCharactersRef.current = selectedCharacters;
       setIsEditing(false);
     } catch (err) {
       setError(err?.message ?? "Erro ao atualizar ator");
@@ -378,51 +227,23 @@ export default function ActorDetailsModal({ actor, onClose, onCharacterSelect, o
 
           <div className="actor-details-modal__section">
             <div className="actor-details-modal__section-title">Personagens</div>
-            {isEditing && (
-              <label className="actor-details-modal__field">
-                <span className="actor-details-modal__label">Adicionar personagem</span>
-                <select
-                  className="actor-details-modal__input"
-                  name="characterId"
-                  value={formData.characterId}
-                  onChange={handleCharacterSelect}
-                >
-                  <option value="" disabled>
-                    {charactersLoading ? "Carregando personagens..." : "Selecione um personagem"}
-                  </option>
-                  {characterOptions.map((character, index) => {
-                    const key = getCharacterKey(character) || String(index);
-                    return (
-                      <option key={key} value={key} disabled={selectedCharacterKeys.has(key)}>
-                        {getCharacterLabel(character)}
-                      </option>
-                    );
-                  })}
-                </select>
-              </label>
-            )}
-            {charactersError && <div className="actor-details-modal__error">Erro: {charactersError}</div>}
-            {(isEditing ? selectedCharacters : roles).length === 0 ? (
+            {roles.length === 0 ? (
               <div className="actor-details-modal__empty">Nenhum personagem cadastrado.</div>
             ) : (
               <div className="actor-details-modal__badges">
-                {(isEditing ? selectedCharacters : roles).map((role) => {
+                {roles.map((role) => {
                   const name = getCharacterLabel(role);
                   if (!name) return null;
                   const key = getCharacterKey(role);
                   return (
                     <Badge
                       key={key || name}
-                      title={isEditing ? "Remover personagem" : name}
+                      title={name}
                       onClick={
-                        isEditing
-                          ? () => handleRemoveCharacter(key)
-                          : onCharacterSelect
-                          ? () => onCharacterSelect(typeof role === "string" ? { name } : role)
-                          : undefined
+                        onCharacterSelect ? () => onCharacterSelect(typeof role === "string" ? { name } : role) : undefined
                       }
                     >
-                      {name} {isEditing && "×"}
+                      {name}
                     </Badge>
                   );
                 })}
