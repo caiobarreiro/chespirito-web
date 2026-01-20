@@ -218,7 +218,7 @@ export async function updateActor({ id, name, fullName, dob, dod }) {
     throw new Error("id is required");
   }
 
-  const url = new URL(`characters/${id}`, base);
+  const url = new URL(`actors/${id}`, base);
 
   const res = await fetch(url.toString(), {
     method: "PUT",
