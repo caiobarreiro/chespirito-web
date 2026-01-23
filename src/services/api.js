@@ -1,10 +1,63 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
+const AWS_TOKEN_URL =
+  import.meta.env.VITE_AWS_TOKEN_URL ??
+  "https://us-east-1mhia8gocl.auth.us-east-1.amazoncognito.com/oauth2/token";
+const AWS_CLIENT_ID =
+  import.meta.env.VITE_AWS_CLIENT_ID ?? "1j99uv8dj99s1dqmushgfhdfpv";
+const AWS_CLIENT_SECRET =
+  import.meta.env.VITE_AWS_CLIENT_SECRET ??
+  "gou9ve36gquqauo1pp7scaclluk43jp1cirkimr0lkfsrt4or1f";
+
+let cachedToken = null;
+let cachedTokenExpiresAt = 0;
 
 function requireApiBase() {
   if (!API_BASE) {
     throw new Error("VITE_API_BASE_URL is not defined");
   }
   return API_BASE;
+}
+
+async function fetchAwsAccessToken() {
+  const now = Date.now();
+  if (cachedToken && cachedTokenExpiresAt > now + 30_000) {
+    return cachedToken;
+  }
+
+  const credentials = btoa(`${AWS_CLIENT_ID}:${AWS_CLIENT_SECRET}`);
+  const body = new URLSearchParams({
+    grant_type: "client_credentials",
+    client_id: AWS_CLIENT_ID,
+  });
+
+  const res = await fetch(AWS_TOKEN_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${credentials}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: body.toString(),
+  });
+
+  if (!res.ok) {
+    throw new Error(`AWS token HTTP ${res.status}`);
+  }
+
+  const data = await res.json();
+  cachedToken = data.access_token;
+  cachedTokenExpiresAt = now + (data.expires_in ?? 3600) * 1000;
+  return cachedToken;
+}
+
+async function fetchWithAwsAuth(url, options = {}) {
+  const token = await fetchAwsAccessToken();
+  const headers = new Headers(options.headers ?? {});
+  headers.set("Authorization", `Bearer ${token}`);
+
+  return fetch(url, {
+    ...options,
+    headers,
+  });
 }
 
 export async function fetchEpisodes({ q }) {
@@ -16,7 +69,7 @@ export async function fetchEpisodes({ q }) {
   const qq = (q ?? "").trim();
   if (qq) url.searchParams.set("q", qq);
 
-  const res = await fetch(url.toString());
+  const res = await fetchWithAwsAuth(url.toString());
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
   return Array.isArray(data) ? data : [];
@@ -31,7 +84,7 @@ export async function fetchActors({ q }) {
   const qq = (q ?? "").trim();
   if (qq) url.searchParams.set("q", qq);
 
-  const res = await fetch(url.toString());
+  const res = await fetchWithAwsAuth(url.toString());
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
   return Array.isArray(data) ? data : [];
@@ -46,7 +99,7 @@ export async function fetchCharacters({ q }) {
   const qq = (q ?? "").trim();
   if (qq) url.searchParams.set("q", qq);
 
-  const res = await fetch(url.toString());
+  const res = await fetchWithAwsAuth(url.toString());
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
   return Array.isArray(data) ? data : [];
@@ -61,7 +114,7 @@ export async function fetchCharacter({ characterId }) {
 
   const url = new URL(`characters/${characterId}`, base);
 
-  const res = await fetch(url.toString());
+  const res = await fetchWithAwsAuth(url.toString());
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
@@ -75,7 +128,7 @@ export async function fetchShows({ q }) {
   const qq = (q ?? "").trim();
   if (qq) url.searchParams.set("q", qq);
 
-  const res = await fetch(url.toString());
+  const res = await fetchWithAwsAuth(url.toString());
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
   return Array.isArray(data) ? data : [];
@@ -88,7 +141,7 @@ export async function fetchEpisodesByCharacter({ characterId }) {
   const url = new URL("episodes", base);
   if (characterId) url.searchParams.set("characters", characterId);
 
-  const res = await fetch(url.toString());
+  const res = await fetchWithAwsAuth(url.toString());
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
   return Array.isArray(data) ? data : [];
@@ -101,7 +154,7 @@ export async function fetchEpisodesByShow({ showId }) {
   const url = new URL("episodes", base);
   if (showId) url.searchParams.set("showId", showId);
 
-  const res = await fetch(url.toString());
+  const res = await fetchWithAwsAuth(url.toString());
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
   return Array.isArray(data) ? data : [];
@@ -113,7 +166,7 @@ export async function createActor({ name, fullName, dob, dod }) {
   // NÃO comece com "/" aqui
   const url = new URL("actors", base);
 
-  const res = await fetch(url.toString(), {
+  const res = await fetchWithAwsAuth(url.toString(), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -136,7 +189,7 @@ export async function createCharacter({ name, nameEs, actor }) {
   // NÃO comece com "/" aqui
   const url = new URL("characters", base);
 
-  const res = await fetch(url.toString(), {
+  const res = await fetchWithAwsAuth(url.toString(), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -158,7 +211,7 @@ export async function createShow({ name, nameEs, startDate, endDate }) {
   // NÃO comece com "/" aqui
   const url = new URL("shows", base);
 
-  const res = await fetch(url.toString(), {
+  const res = await fetchWithAwsAuth(url.toString(), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -190,7 +243,7 @@ export async function createEpisode({
   // NÃO comece com "/" aqui
   const url = new URL("episodes", base);
 
-  const res = await fetch(url.toString(), {
+  const res = await fetchWithAwsAuth(url.toString(), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -220,7 +273,7 @@ export async function updateActor({ id, name, fullName, dob, dod }) {
 
   const url = new URL(`actors/${id}`, base);
 
-  const res = await fetch(url.toString(), {
+  const res = await fetchWithAwsAuth(url.toString(), {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -247,7 +300,7 @@ export async function updateCharacter({ id, name, originalName, actor }) {
 
   const url = new URL(`characters/${id}`, base);
 
-  const res = await fetch(url.toString(), {
+  const res = await fetchWithAwsAuth(url.toString(), {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -273,7 +326,7 @@ export async function updateActorCharacters({ actorId, characters }) {
 
   const url = new URL(`actors/${actorId}/characters`, base);
 
-  const res = await fetch(url.toString(), {
+  const res = await fetchWithAwsAuth(url.toString(), {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -290,7 +343,7 @@ export async function updateEpisodeCharacters({ episodeId, characters }) {
 
   const url = new URL(`episodes/${episodeId}/characters`, base);
 
-  const res = await fetch(url.toString(), {
+  const res = await fetchWithAwsAuth(url.toString(), {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
