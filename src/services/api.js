@@ -68,8 +68,8 @@ export async function fetchEpisodes({ q, page, size }) {
 
   const qq = (q ?? "").trim();
   if (qq) url.searchParams.set("q", qq);
-  if (page) url.searchParams.set("page", String(page));
-  if (size) url.searchParams.set("size", String(size));
+  if (page !== undefined && page !== null) url.searchParams.set("page", String(page));
+  if (size !== undefined && size !== null) url.searchParams.set("size", String(size));
 
   const res = await fetchWithAwsAuth(url.toString());
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
