@@ -127,3 +127,20 @@
   padding: 12px;
   color: $muted;
 }
+
+.app__pagination {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 8px 0 16px;
+  color: $muted;
+}
+
+.app__pagination-status {
+  font-size: 0.95rem;
+}
+
+.app__pagination-sentinel {
+  width: 100%;
+  height: 1px;
+}
