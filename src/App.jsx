@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import SearchBar from "./components/SearchBar/SearchBar.jsx";
 import EpisodeCard from "./components/EpisodeCard/EpisodeCard.jsx";
 import ActorCard from "./components/ActorCard/ActorCard.jsx";
@@ -31,10 +31,14 @@ import {
 import "./App.scss";
 
 export default function App() {
+  const EPISODES_PAGE_SIZE = 20;
   const [episodesQuery, setEpisodesQuery] = useState("");
   const [episodesLoading, setEpisodesLoading] = useState(false);
+  const [episodesPagingLoading, setEpisodesPagingLoading] = useState(false);
   const [episodesErr, setEpisodesErr] = useState("");
   const [episodesItems, setEpisodesItems] = useState([]);
+  const [episodesHasMore, setEpisodesHasMore] = useState(true);
+  const [episodesPaginationActive, setEpisodesPaginationActive] = useState(false);
   const [actorsQuery, setActorsQuery] = useState("");
   const [actorsLoading, setActorsLoading] = useState(false);
   const [actorsErr, setActorsErr] = useState("");
@@ -81,6 +85,10 @@ export default function App() {
   const [episodeCharacters, setEpisodeCharacters] = useState([]);
   const [episodeCharactersLoading, setEpisodeCharactersLoading] = useState(false);
   const [episodeCharactersErr, setEpisodeCharactersErr] = useState("");
+  const episodesPageRef = useRef(1);
+  const episodesQueryRef = useRef("");
+  const episodesFetchIdRef = useRef(0);
+  const episodesLoadMoreRef = useRef(null);
 
   function getShowName(show) {
     return typeof show === "string" ? show : show?.name ?? show?.namePt ?? "";
@@ -165,15 +173,55 @@ export default function App() {
           ? await fetchCharacters({ q: query })
           : route === "shows"
           ? await fetchShows({ q: query })
-          : await fetchEpisodes({ q: query });
+          : await fetchEpisodes({ q: query, page: 1, size: EPISODES_PAGE_SIZE });
       setItems(data);
+      if (route === "episodes") {
+        episodesQueryRef.current = query;
+        episodesFetchIdRef.current += 1;
+        episodesPageRef.current = 1;
+        setEpisodesPagingLoading(false);
+        setEpisodesHasMore(data.length === EPISODES_PAGE_SIZE);
+        setEpisodesPaginationActive(true);
+      }
     } catch (ex) {
       setErr(ex.message || String(ex));
       setItems([]);
+      if (route === "episodes") {
+        setEpisodesHasMore(false);
+        setEpisodesPaginationActive(true);
+      }
     } finally {
       setLoading(false);
     }
   }
+
+  const loadMoreEpisodes = useCallback(async () => {
+    if (!episodesPaginationActive || episodesPagingLoading || episodesLoading || !episodesHasMore) return;
+
+    const nextPage = episodesPageRef.current + 1;
+    episodesFetchIdRef.current += 1;
+    const fetchId = episodesFetchIdRef.current;
+    setEpisodesPagingLoading(true);
+    setEpisodesErr("");
+
+    try {
+      const data = await fetchEpisodes({
+        q: episodesQueryRef.current,
+        page: nextPage,
+        size: EPISODES_PAGE_SIZE,
+      });
+      if (fetchId !== episodesFetchIdRef.current) return;
+      setEpisodesItems((prev) => prev.concat(data));
+      episodesPageRef.current = nextPage;
+      setEpisodesHasMore(data.length === EPISODES_PAGE_SIZE);
+    } catch (ex) {
+      if (fetchId !== episodesFetchIdRef.current) return;
+      setEpisodesErr(ex.message || String(ex));
+    } finally {
+      if (fetchId !== episodesFetchIdRef.current) return;
+      setEpisodesPagingLoading(false);
+    }
+  }, [EPISODES_PAGE_SIZE, episodesHasMore, episodesLoading, episodesPaginationActive, episodesPagingLoading]);
 
   useEffect(() => {
     if (isActorsPage) runSearch(null, "actors");
@@ -181,6 +229,32 @@ export default function App() {
     if (isShowsPage) runSearch(null, "shows");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActorsPage, isCharactersPage, isShowsPage]);
+
+  useEffect(() => {
+    if (isActorsPage || isCharactersPage || isShowsPage) return;
+    if (!episodesPaginationActive || !episodesHasMore) return;
+    const sentinel = episodesLoadMoreRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          loadMoreEpisodes();
+        }
+      },
+      { rootMargin: "200px" },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [
+    isActorsPage,
+    isCharactersPage,
+    isShowsPage,
+    episodesPaginationActive,
+    episodesHasMore,
+    loadMoreEpisodes,
+  ]);
 
   async function handleCreateActor(payload) {
     setActorCreateErr("");
@@ -738,6 +812,16 @@ export default function App() {
               onShowSelect={(value) => setSelectedShow(value)}
             />
           ))}
+
+          {episodesPaginationActive && episodesItems.length > 0 && (
+            <div className="app__pagination">
+              {episodesPagingLoading && <div className="app__pagination-status">Carregando mais…</div>}
+              {!episodesPagingLoading && !episodesHasMore && (
+                <div className="app__pagination-status">Fim dos resultados.</div>
+              )}
+              <div ref={episodesLoadMoreRef} className="app__pagination-sentinel" aria-hidden="true" />
+            </div>
+          )}
         </main>
       )}
 

@@ -60,7 +60,7 @@ async function fetchWithAwsAuth(url, options = {}) {
   });
 }
 
-export async function fetchEpisodes({ q }) {
+export async function fetchEpisodes({ q, page, size }) {
   const base = requireApiBase();
 
   // NÃO comece com "/" aqui
@@ -68,6 +68,8 @@ export async function fetchEpisodes({ q }) {
 
   const qq = (q ?? "").trim();
   if (qq) url.searchParams.set("q", qq);
+  if (page) url.searchParams.set("page", String(page));
+  if (size) url.searchParams.set("size", String(size));
 
   const res = await fetchWithAwsAuth(url.toString());
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
