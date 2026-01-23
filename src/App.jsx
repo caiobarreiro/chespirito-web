@@ -31,7 +31,7 @@ import {
 import "./App.scss";
 
 export default function App() {
-  const EPISODES_PAGE_SIZE = 20;
+  const EPISODES_PAGE_SIZE = 10;
   const [episodesQuery, setEpisodesQuery] = useState("");
   const [episodesLoading, setEpisodesLoading] = useState(false);
   const [episodesPagingLoading, setEpisodesPagingLoading] = useState(false);
@@ -85,7 +85,7 @@ export default function App() {
   const [episodeCharacters, setEpisodeCharacters] = useState([]);
   const [episodeCharactersLoading, setEpisodeCharactersLoading] = useState(false);
   const [episodeCharactersErr, setEpisodeCharactersErr] = useState("");
-  const episodesPageRef = useRef(1);
+  const episodesPageRef = useRef(0);
   const episodesQueryRef = useRef("");
   const episodesFetchIdRef = useRef(0);
   const episodesLoadMoreRef = useRef(null);
@@ -173,12 +173,12 @@ export default function App() {
           ? await fetchCharacters({ q: query })
           : route === "shows"
           ? await fetchShows({ q: query })
-          : await fetchEpisodes({ q: query, page: 1, size: EPISODES_PAGE_SIZE });
+          : await fetchEpisodes({ q: query, page: 0, size: EPISODES_PAGE_SIZE });
       setItems(data);
       if (route === "episodes") {
         episodesQueryRef.current = query;
         episodesFetchIdRef.current += 1;
-        episodesPageRef.current = 1;
+        episodesPageRef.current = 0;
         setEpisodesPagingLoading(false);
         setEpisodesHasMore(data.length === EPISODES_PAGE_SIZE);
         setEpisodesPaginationActive(true);
