@@ -32,6 +32,7 @@ export default function CharacterModal({
 }) {
   if (!character) return null;
 
+  const EPISODES_PAGE_SIZE = 6;
   const showOptions = useMemo(() => {
     const fromCharacter = Array.isArray(character?.shows) ? character.shows : [];
     const fallbackShows = episodes.map((episode) => episode.show).filter(Boolean);
@@ -52,6 +53,7 @@ export default function CharacterModal({
 
   const hasMultipleShows = showOptions.length > 1;
   const [selectedShowKey, setSelectedShowKey] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     if (showOptions.length === 0) {
@@ -64,12 +66,22 @@ export default function CharacterModal({
     setSelectedShowKey(defaultShow?.key ?? "");
   }, [showOptions, character?.id]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedShowKey, episodes]);
+
   const filteredEpisodes =
     hasMultipleShows && selectedShowKey
       ? episodes.filter(
           (episode) => getNormalizedShowKey(episode.show) === selectedShowKey,
         )
       : episodes;
+  const totalPages = Math.max(1, Math.ceil(filteredEpisodes.length / EPISODES_PAGE_SIZE));
+  const clampedPage = Math.min(currentPage, totalPages);
+  const pagedEpisodes = filteredEpisodes.slice(
+    (clampedPage - 1) * EPISODES_PAGE_SIZE,
+    clampedPage * EPISODES_PAGE_SIZE,
+  );
   const actorName = getActorName(
     character?.actor ?? character?.actorName ?? character?.actorFullName,
   );
@@ -146,7 +158,7 @@ export default function CharacterModal({
 
         {!loading && !error && filteredEpisodes.length > 0 && (
           <ul className="character-modal__list">
-            {filteredEpisodes.map((episode) => (
+            {pagedEpisodes.map((episode) => (
               <li key={episode.id ?? episode.title} className="character-modal__item">
                 <div className="character-modal__item-header">
                   <ShowLabel show={episode.show} onSelect={onShowSelect} />
@@ -163,6 +175,30 @@ export default function CharacterModal({
               </li>
             ))}
           </ul>
+        )}
+
+        {!loading && !error && filteredEpisodes.length > EPISODES_PAGE_SIZE && (
+          <div className="character-modal__pagination" aria-label="Paginação de episódios">
+            <button
+              className="character-modal__pagination-button"
+              type="button"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={clampedPage === 1}
+            >
+              Anterior
+            </button>
+            <span className="character-modal__pagination-label">
+              Página {clampedPage} de {totalPages}
+            </span>
+            <button
+              className="character-modal__pagination-button"
+              type="button"
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={clampedPage === totalPages}
+            >
+              Próxima
+            </button>
+          </div>
         )}
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "./ShowModal.scss";
 
 function getShowName(show) {
@@ -8,6 +8,9 @@ function getShowName(show) {
 export default function ShowModal({ show, episodes, loading, error, onClose }) {
   if (!show) return null;
 
+  const EPISODES_PAGE_SIZE = 8;
+  const [currentPage, setCurrentPage] = useState(1);
+
   useEffect(() => {
     function handleKeyDown(event) {
       if (event.key === "Escape") onClose();
@@ -15,6 +18,17 @@ export default function ShowModal({ show, episodes, loading, error, onClose }) {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [show, episodes]);
+
+  const totalPages = Math.max(1, Math.ceil(episodes.length / EPISODES_PAGE_SIZE));
+  const clampedPage = Math.min(currentPage, totalPages);
+  const pagedEpisodes = episodes.slice(
+    (clampedPage - 1) * EPISODES_PAGE_SIZE,
+    clampedPage * EPISODES_PAGE_SIZE,
+  );
 
   return (
     <div className="show-modal" role="dialog" aria-modal="true" onClick={onClose}>
@@ -34,7 +48,7 @@ export default function ShowModal({ show, episodes, loading, error, onClose }) {
 
         {!loading && !error && episodes.length > 0 && (
           <ul className="show-modal__list">
-            {episodes.map((episode) => (
+            {pagedEpisodes.map((episode) => (
               <li key={episode.id ?? episode.title} className="show-modal__item">
                 <div>
                   <div className="show-modal__item-title">{episode.title}</div>
@@ -48,6 +62,30 @@ export default function ShowModal({ show, episodes, loading, error, onClose }) {
               </li>
             ))}
           </ul>
+        )}
+
+        {!loading && !error && episodes.length > EPISODES_PAGE_SIZE && (
+          <div className="show-modal__pagination" aria-label="Paginação de episódios">
+            <button
+              className="show-modal__pagination-button"
+              type="button"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={clampedPage === 1}
+            >
+              Anterior
+            </button>
+            <span className="show-modal__pagination-label">
+              Página {clampedPage} de {totalPages}
+            </span>
+            <button
+              className="show-modal__pagination-button"
+              type="button"
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={clampedPage === totalPages}
+            >
+              Próxima
+            </button>
+          </div>
         )}
       </div>
     </div>
