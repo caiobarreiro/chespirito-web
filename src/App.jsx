@@ -65,6 +65,8 @@ export default function App() {
   const [showEpisodes, setShowEpisodes] = useState([]);
   const [showEpisodesLoading, setShowEpisodesLoading] = useState(false);
   const [showEpisodesErr, setShowEpisodesErr] = useState("");
+  const showEpisodesFetchIdRef = useRef(0);
+  const lastShowEpisodesIdRef = useRef(null);
   const [path, setPath] = useState(window.location.pathname);
   const [isActorModalOpen, setIsActorModalOpen] = useState(false);
   const [actorCreateErr, setActorCreateErr] = useState("");
@@ -451,29 +453,40 @@ export default function App() {
   }, [selectedCharacter]);
 
   useEffect(() => {
-    if (!selectedShow) return;
-    if (!selectedShow.id) {
+    if (!selectedShow) {
+      lastShowEpisodesIdRef.current = null;
+      return;
+    }
+    const showId = selectedShow.id ?? selectedShow.uuid;
+    if (!showId) {
       setShowEpisodes([]);
       setShowEpisodesErr("Show sem identificador.");
       return;
     }
 
+    if (lastShowEpisodesIdRef.current === showId) return;
+    lastShowEpisodesIdRef.current = showId;
+    showEpisodesFetchIdRef.current += 1;
+    const fetchId = showEpisodesFetchIdRef.current;
     let isActive = true;
     setShowEpisodes([]);
     setShowEpisodesErr("");
     setShowEpisodesLoading(true);
 
-    fetchEpisodesByShow({ showId: selectedShow.id })
+    fetchEpisodesByShow({ showId })
       .then((data) => {
         if (!isActive) return;
+        if (fetchId !== showEpisodesFetchIdRef.current) return;
         setShowEpisodes(data);
       })
       .catch((ex) => {
         if (!isActive) return;
+        if (fetchId !== showEpisodesFetchIdRef.current) return;
         setShowEpisodesErr(ex.message || String(ex));
       })
       .finally(() => {
         if (!isActive) return;
+        if (fetchId !== showEpisodesFetchIdRef.current) return;
         setShowEpisodesLoading(false);
       });
 
