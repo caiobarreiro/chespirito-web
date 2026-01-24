@@ -25,6 +25,12 @@
   gap: 16px;
 }
 
+.episode-modal__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .episode-modal__title {
   margin: 0;
   font-size: 24px;
@@ -47,8 +53,33 @@
   font-size: 12px;
 }
 
+.episode-modal__delete {
+  border: 0;
+  background: rgba(248, 113, 113, 0.18);
+  color: #fecaca;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.episode-modal__delete:hover:not(:disabled) {
+  background: rgba(248, 113, 113, 0.32);
+}
+
+.episode-modal__delete:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
 .episode-modal__close:hover {
   background: rgba(247, 248, 252, 0.2);
+}
+
+.episode-modal__error {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #fecaca;
 }
 
 .episode-modal__meta {

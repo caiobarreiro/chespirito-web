@@ -27,6 +27,7 @@ import {
   createEpisode,
   updateCharacter,
   updateEpisodeCharacters,
+  deleteEpisode,
 } from "./services/api.js";
 import "./App.scss";
 
@@ -56,6 +57,8 @@ export default function App() {
   const [selectedCharacter, setSelectedCharacter] = useState(null);
   const [selectedEpisode, setSelectedEpisode] = useState(null);
   const [episodeModalReturn, setEpisodeModalReturn] = useState(null);
+  const [episodeDeleteErr, setEpisodeDeleteErr] = useState("");
+  const [episodeDeleteLoading, setEpisodeDeleteLoading] = useState(false);
   const characterFetchIdRef = useRef(0);
   const [characterEpisodes, setCharacterEpisodes] = useState([]);
   const [characterEpisodesLoading, setCharacterEpisodesLoading] = useState(false);
@@ -342,6 +345,27 @@ export default function App() {
     }
   }
 
+  async function handleDeleteEpisode() {
+    const episodeId = selectedEpisode?.uuid ?? selectedEpisode?.id;
+    if (!episodeId) {
+      setEpisodeDeleteErr("Episódio sem identificador.");
+      return;
+    }
+
+    setEpisodeDeleteErr("");
+    setEpisodeDeleteLoading(true);
+    try {
+      await updateEpisodeCharacters({ episodeId, characters: [] });
+      await deleteEpisode({ episodeId });
+      setSelectedEpisode(null);
+      runSearch(null, "episodes");
+    } catch (ex) {
+      setEpisodeDeleteErr(ex.message || String(ex));
+    } finally {
+      setEpisodeDeleteLoading(false);
+    }
+  }
+
   useEffect(() => {
     if (!isCharacterModalOpen && !isEditCharacterModalOpen) return;
     let isActive = true;
@@ -406,6 +430,12 @@ export default function App() {
       isActive = false;
     };
   }, [isEpisodeModalOpen]);
+
+  useEffect(() => {
+    if (!selectedEpisode) return;
+    setEpisodeDeleteErr("");
+    setEpisodeDeleteLoading(false);
+  }, [selectedEpisode]);
 
   useEffect(() => {
     setCharacterEpisodes([]);
@@ -868,6 +898,9 @@ export default function App() {
         episode={selectedEpisode}
         onClose={() => setSelectedEpisode(null)}
         onCharacterSelect={handleCharacterSelectFromEpisode}
+        onDelete={handleDeleteEpisode}
+        deleteError={episodeDeleteErr}
+        isDeleting={episodeDeleteLoading}
       />
 
       <ActorModal
