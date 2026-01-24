@@ -408,10 +408,10 @@ export default function App() {
   }, [isEpisodeModalOpen]);
 
   useEffect(() => {
+    setCharacterEpisodes([]);
     if (!selectedCharacter) return;
     const characterId = selectedCharacter.id ?? selectedCharacter.uuid;
     if (!characterId) {
-      setCharacterEpisodes([]);
       setCharacterEpisodesErr("Personagem sem identificador.");
       return;
     }
@@ -547,7 +547,7 @@ export default function App() {
     try {
       const data = await fetchCharacter({ characterId });
       if (fetchId !== characterFetchIdRef.current) return;
-      setSelectedCharacter(data?.character ?? data);
+      // setSelectedCharacter(data?.character ?? data);
     } catch (ex) {
       if (fetchId !== characterFetchIdRef.current) return;
       setCharacterDetailsErr(ex.message || String(ex));
