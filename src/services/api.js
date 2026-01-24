@@ -356,3 +356,21 @@ export async function updateEpisodeCharacters({ episodeId, characters }) {
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
+
+export async function deleteEpisode({ episodeId }) {
+  const base = requireApiBase();
+
+  if (!episodeId) {
+    throw new Error("episodeId is required");
+  }
+
+  const url = new URL(`episode/${episodeId}`, base);
+
+  const res = await fetchWithAwsAuth(url.toString(), {
+    method: "DELETE",
+  });
+
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  if (res.status === 204) return null;
+  return res.json();
+}

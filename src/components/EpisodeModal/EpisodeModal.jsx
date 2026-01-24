@@ -2,7 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import Badge from "../Badge/Badge.jsx";
 import "./EpisodeModal.scss";
 
-export default function EpisodeModal({ episode, onClose, onCharacterSelect }) {
+export default function EpisodeModal({
+  episode,
+  onClose,
+  onCharacterSelect,
+  onDelete,
+  deleteError,
+  isDeleting,
+}) {
   const [language, setLanguage] = useState("pt");
 
   useEffect(() => {
@@ -41,10 +48,22 @@ export default function EpisodeModal({ episode, onClose, onCharacterSelect }) {
             <h2 className="episode-modal__title">{episode.title}</h2>
             {episode.titleEs && <div className="episode-modal__subtitle">{episode.titleEs}</div>}
           </div>
-          <button className="episode-modal__close" type="button" onClick={onClose}>
-            Fechar
-          </button>
+          <div className="episode-modal__actions">
+            <button
+              className="episode-modal__delete"
+              type="button"
+              onClick={onDelete}
+              disabled={!onDelete || isDeleting}
+            >
+              {isDeleting ? "Excluindo..." : "Excluir"}
+            </button>
+            <button className="episode-modal__close" type="button" onClick={onClose}>
+              Fechar
+            </button>
+          </div>
         </div>
+
+        {deleteError && <div className="episode-modal__error">Erro: {deleteError}</div>}
 
         <div className="episode-modal__meta">
           <span>
